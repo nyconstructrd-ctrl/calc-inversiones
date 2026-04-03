@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Calc Inversiones">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <title>Calc Inversiones - Gestión de Ropa</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="styles.css">
+    <script>
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function formatCurrency(num) {
+            return 'RD$ ' + parseFloat(num || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '';
+            const d = new Date(dateStr);
+            return d.toLocaleDateString('es-DO');
+        }
+    </script>
+</head>
+<body>
+    <div id="app">
+        <nav class="bottom-nav">
+            <button onclick="showHome()" class="nav-btn active" id="nav-home">🏠 Inicio</button>
+            <button onclick="showConfig()" class="nav-btn" id="nav-config">⚙️</button>
+            <button onclick="showShopping()" class="nav-btn" id="nav-shopping">🛒 Compras</button>
+            <button onclick="showSales()" class="nav-btn" id="nav-sales">💵 Ventas</button>
+            <button onclick="showHistory()" class="nav-btn" id="nav-history">📊</button>
+        </nav>
+
+        <!-- PANTALLA HOME / DASHBOARD -->
+        <div id="home-screen" class="screen active">
+            <h1>💰 Calc Inversiones</h1>
+            
+            <div class="dashboard">
+                <div class="dash-card" style="background: linear-gradient(135deg, #4CAF50, #45a049);">
+                    <p class="dash-label">Venta del Mes</p>
+                    <p class="dash-value" id="dash-ventas">RD$ 0.00</p>
+                </div>
+                
+                <div class="dash-card" style="background: linear-gradient(135deg, #2196F3, #1976D2);">
+                    <p class="dash-label">Inversión del Mes</p>
+                    <p class="dash-value" id="dash-inversion">RD$ 0.00</p>
+                </div>
+                
+                <div class="dash-card" style="background: linear-gradient(135deg, #FF9800, #F57C00);">
+                    <p class="dash-label">Diezmo (10%)</p>
+                    <p class="dash-value" id="dash-diezmo">RD$ 0.00</p>
+                </div>
+                
+                <div class="dash-card" style="background: linear-gradient(135deg, #9C27B0, #7B1FA2);">
+                    <p class="dash-label">Resto por Vender</p>
+                    <p class="dash-value" id="dash-resto">RD$ 0.00</p>
+                </div>
+                
+                <div class="dash-card" style="background: linear-gradient(135deg, #f44336, #D32F2F);">
+                    <p class="dash-label">Utilidad Neta</p>
+                    <p class="dash-value" id="dash-utilidad">RD$ 0.00</p>
+                </div>
+            </div>
+
+            <button onclick="showShopping()" class="btn-primary" style="margin-top: 15px;">➕ Registrar Compra</button>
+            <button onclick="showSales()" class="btn-primary" style="margin-top: 10px;">💵 Registrar Venta</button>
+
+            <div class="card" style="margin-top: 20px;">
+                <h3>📦 Últimas Compras</h3>
+                <div id="home-compras"></div>
+            </div>
+        </div>
+
+        <!-- PANTALLA CONFIG -->
+        <div id="config-screen" class="screen">
+            <h2>⚙️ Datos del Comercio</h2>
+            
+            <div class="card">
+                <label>💵 Costo por Libra (USD)</label>
+                <input type="number" id="config-costo-libra" class="input" placeholder="Ej: 5">
+            </div>
+            
+            <div class="card">
+                <label>🔄 Tasa de Cambio (1 USD = ?)</label>
+                <input type="number" id="config-tasa" class="input" placeholder="Ej: 3500">
+            </div>
+            
+            <div class="card">
+                <label>📢 Publicidad Mensual</label>
+                <input type="number" id="config-publicidad" class="input" placeholder="Ej: 50000">
+            </div>
+            
+            <div class="card">
+                <label>🙏 Diezmo (10%)</label>
+                <p style="color: #666; font-size: 14px;">Se calcula automáticamente de la utilidad bruta</p>
+            </div>
+
+            <button onclick="saveConfig()" class="btn-primary">💾 Guardar Configuración</button>
+            <button onclick="showHome()" class="btn-secondary">← Volver</button>
+        </div>
+
+        <!-- PANTALLA COMPRAS -->
+        <div id="shopping-screen" class="screen">
+            <h2>🛒 Registrar Compra</h2>
+            
+            <div class="card">
+                <label>Proveedor</label>
+                <select id="compra-proveedor" class="input">
+                    <option value="Shein">Shein</option>
+                    <option value="Fashion Nova">Fashion Nova</option>
+                    <option value="Por fuera">Por fuera</option>
+                </select>
+            </div>
+            
+            <div class="card">
+                <label>💵 Costo en Dólares (USD)</label>
+                <input type="number" id="compra-costo" class="input" placeholder="Ej: 25.00" step="0.01">
+            </div>
+            
+            <div class="card">
+                <label>⚖️ Peso en Libras</label>
+                <input type="number" id="compra-peso" class="input" placeholder="Ej: 2.5" step="0.1">
+                <p id="compra-envio-preview" style="color: #4CAF50; font-size: 14px; margin-top: 5px;"></p>
+            </div>
+
+            <div class="card" style="background: #E8F5E9; border: 2px solid #4CAF50;">
+                <p style="margin: 0; font-weight: bold;">Total Inversión:</p>
+                <p style="font-size: 24px; font-weight: bold; color: #2E7D32; margin: 5px 0 0 0;" id="compra-total">RD$ 0.00</p>
+            </div>
+
+            <button onclick="saveCompra()" class="btn-primary">💾 Guardar Compra</button>
+            <button onclick="showHome()" class="btn-secondary">← Volver</button>
+
+            <div class="card" style="margin-top: 20px;">
+                <h3>📦 Compras Pendientes</h3>
+                <div id="compras-list"></div>
+            </div>
+        </div>
+
+        <!-- PANTALLA VENTAS -->
+        <div id="sales-screen" class="screen">
+            <h2>💵 Registrar Venta</h2>
+            
+            <div class="card">
+                <label>Seleccionar Prenda</label>
+                <select id="venta-compra" class="input">
+                    <option value="">-- Seleccionar --</option>
+                </select>
+            </div>
+            
+            <div class="card">
+                <label>💰 Precio de Venta (RD$)</label>
+                <input type="number" id="venta-precio" class="input" placeholder="Ej: 150000">
+                <p id="venta-ganancia-preview" style="color: #666; font-size: 14px; margin-top: 5px;"></p>
+            </div>
+            
+            <div class="card">
+                <label>📱 Teléfono del Cliente</label>
+                <input type="tel" id="venta-telefono" class="input" placeholder="809-000-0000" maxlength="12">
+            </div>
+
+            <button onclick="saveVenta()" class="btn-primary">✅ Marcar como Vendida</button>
+            <button onclick="openWhatsApp()" class="btn-whatsapp" style="margin-top: 10px;">📱 Enviar Factura WhatsApp</button>
+            <button onclick="showHome()" class="btn-secondary">← Volver</button>
+
+            <div class="card" style="margin-top: 20px;">
+                <h3>💰 Ventas Recientes</h3>
+                <div id="ventas-list"></div>
+            </div>
+        </div>
+
+        <!-- PANTALLA HISTORIAL -->
+        <div id="history-screen" class="screen">
+            <h2>📊 Historial y Respaldo</h2>
+            
+            <div class="card" style="background: linear-gradient(135deg, #4285F4, #1976D2);">
+                <h3 style="color: white; margin: 0;">📦 Respaldo a Google Drive</h3>
+                <div id="drive-status" style="margin-top: 10px; padding: 10px; background: rgba(255,255,255,0.2); border-radius: 8px;">
+                    <p style="margin: 0; font-size: 14px; color: white;">
+                        Google Drive: <span id="drive-status-text">No conectado</span>
+                    </p>
+                </div>
+                <button id="drive-connect-btn" onclick="connectDrive()" class="btn-primary" style="margin-top: 10px; background: white; color: #4285F4;">
+                    🔗 Conectar Google Drive
+                </button>
+            </div>
+
+            <div id="drive-config" style="display: none;">
+                <div class="card">
+                    <label>Frecuencia de Respaldo Automático</label>
+                    <select id="backup-frequency" class="input" onchange="saveBackupFrequency()">
+                        <option value="0">Sin respaldo automático</option>
+                        <option value="1">Cada día</option>
+                        <option value="3">Cada 3 días</option>
+                        <option value="7" selected>Cada 7 días (semanal)</option>
+                        <option value="15">Cada 15 días</option>
+                        <option value="30">Cada 30 días</option>
+                    </select>
+                    <button onclick="uploadBackupToDrive()" class="btn-primary" style="background: #34A853; margin-top: 10px;">
+                        📁 Backup a Drive Ahora
+                    </button>
+                    <button onclick="showDriveBackups()" class="btn-secondary" style="margin-top: 10px;">
+                        📂 Ver Backups en Drive
+                    </button>
+                </div>
+            </div>
+
+            <div id="drive-backups-list" style="display: none;">
+                <div class="card">
+                    <h3>📂 Backups en Drive</h3>
+                    <div id="backups-container">
+                        <p style="color: #999; text-align: center;">Cargando...</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>📋 Resumen Mensual</h3>
+                <select id="history-month" class="input" onchange="loadMonthData()">
+                    <option value="">Seleccionar mes</option>
+                </select>
+                <div id="history-data"></div>
+            </div>
+
+            <button onclick="generateReport()" class="btn-secondary" style="margin-top: 15px;">📊 Generar Reporte de Texto</button>
+            <button onclick="exportData()" class="btn-secondary" style="margin-top: 10px;">📥 Descargar Respaldo Local</button>
+            <button onclick="document.getElementById('import-file').click()" class="btn-secondary" style="margin-top: 10px;">📤 Restaurar Respaldo</button>
+            <input type="file" id="import-file" accept=".json" style="display: none;" onchange="importData(event)">
+            
+            <button onclick="showHome()" class="btn-secondary" style="margin-top: 15px;">← Volver</button>
+        </div>
+    </div>
+
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="https://apis.google.com/js/api.js"></script>
+    <script src="drive-backup.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
