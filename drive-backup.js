@@ -5,71 +5,58 @@ const GOOGLE_CLIENT_ID = 'AIzaSyBmWmfduZ5fhYaHul9JFQVZYBThkmb0Lyk';
 const DRIVE_FOLDER_NAME = 'Calc Inversiones Backup';
 let driveFolderId = null;
 let isConnected = false;
-let tokenClient = null;
+let accessToken = null;
 
 // ============================================
 // INICIALIZACIÓN
 // ============================================
 
-window.addEventListener('load', function() {
-    initGoogleDrive();
-});
-
 function initGoogleDrive() {
-    // Cargar script de Google Identity Services
-    if (typeof google !== 'undefined' && google.accounts) {
-        initializeTokenClient();
-    }
-}
-
-function initializeTokenClient() {
-    try {
-        tokenClient = google.accounts.oauth2.initTokenClient({
-            client_id: GOOGLE_CLIENT_ID,
-            scope: 'https://www.googleapis.com/auth/drive.file',
-            callback: handleAuthCallback,
-        });
-    } catch (e) {
-        console.log('Google OAuth no disponible aún');
-    }
+    console.log('🔄 Inicializando Google Drive...');
 }
 
 // ============================================
-// AUTENTICACIÓN
+// AUTENTICACIÓN - Google OAuth 2.0
 // ============================================
 
 function connectDrive() {
-    if (!tokenClient) {
-        initializeTokenClient();
-        setTimeout(connectDrive, 1000);
+    console.log('🔗 Intentando conectar a Google Drive...');
+    
+    if (typeof google === 'undefined' || !google.accounts) {
+        alert('⚠️ Google no está cargado. Recarga la página e intenta de nuevo.');
         return;
     }
     
-    try {
-        tokenClient.requestAccessToken({ prompt: 'consent' });
-    } catch (e) {
-        alert('Error al conectar: ' + e.message);
-    }
-}
-
-function handleAuthCallback(response) {
-    if (response.access_token) {
-        isConnected = true;
-        localStorage.setItem('calc_drive_connected', 'true');
-        updateDriveStatus(true);
-        getOrCreateFolder();
-        
-        // Configurar backup automático
-        setupAutoBackup();
-    }
+    const client = google.accounts.oauth2.initTokenClient({
+        client_id: GOOGLE_CLIENT_ID,
+        scope: 'https://www.googleapis.com/auth/drive.file',
+        callback: (response) => {
+            if (response.access_token) {
+                accessToken = response.access_token;
+                isConnected = true;
+                localStorage.setItem('calc_drive_connected', 'true');
+                updateDriveStatus(true);
+                alert('✅ ¡Conectado a Google Drive!');
+                getOrCreateFolder();
+            } else if (response.error) {
+                alert('❌ Error: ' + response.error);
+            }
+        },
+    });
+    
+    client.requestAccessToken({ prompt: 'consent' });
 }
 
 function disconnectDrive() {
-    google.accounts.oauth2.revoke(accessToken => {
-        isConnected = false;
-        localStorage.removeItem('calc_drive_connected');
-        updateDriveStatus(false);
-    });
+    if (accessToken) {
+        google.accounts.oauth2.revoke(accessToken, () => {
+            accessToken = null;
+            isConnected = false;
+            localStorage.removeItem('calc_drive_connected');
+            updateDriveStatus(false);
+            alert('🔴 Desconectado de Google Drive');
+        });
+    }
 }
 
 // ============================================
@@ -105,50 +92,65 @@ function updateDriveStatus(connected) {
 // ============================================
 
 async function getOrCreateFolder() {
+    if (!accessToken) return;
+    
     try {
         // Buscar carpeta existente
-        const response = await gapi.client.drive.files.list({
-            q: `name='${DRIVE_FOLDER_NAME}' and mimeType='application/vnd.google-apps.folder' and trashed=false`,
-            fields: 'files(id, name)'
-        });
+        const searchResponse = await fetch(
+            'https://www.googleapis.com/drive/v3/files?q=name%3D%27' + encodeURIComponent(DRIVE_FOLDER_NAME) + %27%20and%20mimeType%3D%27application%2Fvnd.google-apps.folder%27%20and%20trashed%3Dfalse',
+            { headers: { 'Authorization': 'Bearer ' + accessToken } }
+        );
+        const searchData = await searchResponse.json();
         
-        if (response.result.files && response.result.files.length > 0) {
-            driveFolderId = response.result.files[0].id;
-            console.log('Carpeta encontrada:', driveFolderId);
+        if (searchData.files && searchData.files.length > 0) {
+            driveFolderId = searchData.files[0].id;
+            console.log('📁 Carpeta encontrada:', driveFolderId);
         } else {
             // Crear carpeta
-            const createResponse = await gapi.client.drive.files.create({
-                name: DRIVE_FOLDER_NAME,
-                mimeType: 'application/vnd.google-apps.folder'
-            });
-            driveFolderId = createResponse.result.id;
-            console.log('Carpeta creada:', driveFolderId);
+            const createResponse = await fetch(
+                'https://www.googleapis.com/drive/v3/files',
+                {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + accessToken,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        name: DRIVE_FOLDER_NAME,
+                        mimeType: 'application/vnd.google-apps.folder'
+                    })
+                }
+            );
+            const createData = await createResponse.json();
+            driveFolderId = createData.id;
+            console.log('📁 Carpeta creada:', driveFolderId);
         }
     } catch (e) {
-        console.error('Error con carpeta:', e);
+        console.error('❌ Error con carpeta:', e);
     }
 }
 
 // ============================================
-// BACKUP
+// BACKUP - SUBIR A DRIVE
 // ============================================
 
 async function uploadBackupToDrive() {
-    if (!isConnected) {
+    console.log('📤 Subiendo backup...');
+    
+    if (!accessToken) {
         alert('⚠️ Conecta Google Drive primero');
         return;
     }
     
-    // Cargar API de Drive si no está
-    if (!window.gapi) {
-        await loadGapiClient();
+    if (!driveFolderId) {
+        await getOrCreateFolder();
     }
     
     // Preparar datos
     const data = {
-        config: config,
-        compras: compras,
-        ventas: ventas,
+        config: window.config,
+        compras: window.compras,
+        ventas: window.ventas,
         fechaRespaldo: new Date().toISOString(),
         version: '1.0'
     };
@@ -156,47 +158,55 @@ async function uploadBackupToDrive() {
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const filename = `calc-inversiones-backup-${new Date().toISOString().split('T')[0]}.json`;
     
-    //metadata
+    // Metadata
     const metadata = {
         name: filename,
         parents: [driveFolderId]
     };
     
-    const form = new FormData();
-    form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
-    form.append('file', blob);
+    // Crear multipart request
+    const boundary = '-------314159265358979323846';
+    const delimiter = "\r\n--" + boundary + "\r\n";
+    const closeDelimiter = "\r\n--" + boundary + "--";
+    
+    const metadataJson = JSON.stringify(metadata);
+    const fileContent = await blob.text();
+    
+    const requestBody = 
+        delimiter + 
+        'Content-Type: application/json; charset=UTF-8\r\n\r\n' + 
+        metadataJson + 
+        delimiter + 
+        'Content-Type: application/octet-stream\r\n\r\n' + 
+        fileContent + 
+        closeDelimiter;
     
     try {
-        const response = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
-            method: 'POST',
-            headers: {
-                'Authorization': 'Bearer ' + google.accounts.oauth2.getToken().access_token
-            },
-            body: form
-        });
+        const response = await fetch(
+            'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',
+            {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + accessToken,
+                    'Content-Type': 'multipart/related; boundary="' + boundary + '"'
+                },
+                body: requestBody
+            }
+        );
         
         if (response.ok) {
             alert('✅ Backup subido a Google Drive');
             localStorage.setItem('calc_last_backup', Date.now().toString());
             showDriveBackups();
         } else {
+            const error = await response.text();
+            console.error('Error:', error);
             alert('❌ Error al subir backup');
         }
     } catch (e) {
-        console.error('Error upload:', e);
+        console.error('❌ Error upload:', e);
         alert('❌ Error: ' + e.message);
     }
-}
-
-async function loadGapiClient() {
-    return new Promise((resolve) => {
-        const script = document.createElement('script');
-        script.src = 'https://apis.google.com/js/api.js';
-        script.onload = () => {
-            gapi.load('client', resolve);
-        };
-        document.body.appendChild(script);
-    });
 }
 
 // ============================================
@@ -204,7 +214,9 @@ async function loadGapiClient() {
 // ============================================
 
 async function showDriveBackups() {
-    if (!isConnected) {
+    console.log('📂 Obteniendo lista de backups...');
+    
+    if (!accessToken) {
         alert('⚠️ Conecta Google Drive primero');
         return;
     }
@@ -214,15 +226,16 @@ async function showDriveBackups() {
     listSection.style.display = 'block';
     
     try {
-        const response = await gapi.client.drive.files.list({
-            q: `'${driveFolderId}' in parents and mimeType='application/json' and trashed=false`,
-            fields: 'files(id, name, createdTime)',
-            orderBy: 'createdTime desc'
-        });
+        const response = await fetch(
+            `https://www.googleapis.com/drive/v3/files?q='${driveFolderId}'%20in%20parents%20and%20mimeType%3D'application%2Fjson'%20and%20trashed%3Dfalse&orderBy=createdTime%20desc`,
+            { headers: { 'Authorization': 'Bearer ' + accessToken } }
+        );
         
-        if (response.result.files && response.result.files.length > 0) {
+        const data = await response.json();
+        
+        if (data.files && data.files.length > 0) {
             let html = '';
-            response.result.files.forEach(file => {
+            data.files.forEach(file => {
                 const date = new Date(file.createdTime).toLocaleDateString();
                 html += `
                     <div style="padding: 10px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
@@ -246,24 +259,30 @@ async function showDriveBackups() {
     }
 }
 
+// ============================================
+// RESTAURAR DESDE DRIVE
+// ============================================
+
 async function restoreFromDrive(fileId) {
     if (!confirm('⚠️ Esto reemplazará todos los datos actuales. ¿Continuar?')) return;
     
+    console.log('📥 Restaurando archivo:', fileId);
+    
     try {
-        const response = await gapi.client.drive.files.get({
-            fileId: fileId,
-            alt: 'media'
-        });
+        const response = await fetch(
+            `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`,
+            { headers: { 'Authorization': 'Bearer ' + accessToken } }
+        );
         
-        const data = JSON.parse(response.body);
+        const data = await response.json();
         
-        if (data.config) config = data.config;
-        if (data.compras) compras = data.compras;
-        if (data.ventas) ventas = data.ventas;
+        if (data.config) window.config = data.config;
+        if (data.compras) window.compras = data.compras;
+        if (data.ventas) window.ventas = data.ventas;
         
-        saveData();
+        window.saveData();
         alert('✅ Datos restaurados correctamente');
-        showHome();
+        window.showHome();
         
     } catch (e) {
         console.error('Error restoring:', e);
@@ -286,9 +305,12 @@ function saveBackupFrequency() {
 
 function setupAutoBackup() {
     const frequency = localStorage.getItem('calc_backup_frequency') || '7';
-    document.getElementById('backup-frequency').value = frequency;
+    const freqSelect = document.getElementById('backup-frequency');
+    if (freqSelect) {
+        freqSelect.value = frequency;
+    }
     
-    if (frequency !== '0') {
+    if (frequency !== '0' && isConnected) {
         scheduleAutoBackup(parseInt(frequency));
     }
 }
@@ -299,18 +321,10 @@ function scheduleAutoBackup(days) {
     const daysMs = days * 24 * 60 * 60 * 1000;
     
     if (!lastBackup || (now - parseInt(lastBackup)) > daysMs) {
-        // Tiempo de hacer backup
         console.log('⏰ Programando backup automático...');
         uploadBackupToDrive();
     }
 }
 
-// ============================================
-// MOSTRAR ESTADO AL INICIO
-// ============================================
-
-// Verificar si ya estaba conectado (para session actual)
-if (localStorage.getItem('calc_drive_connected') === 'true') {
-    // Requires re-auth on page load for security
-    console.log('Drive previously connected, user needs to reconnect');
-}
+// Inicializar
+console.log('📦 Calc Inversiones - Drive Backup loaded');

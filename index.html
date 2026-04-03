@@ -238,9 +238,17 @@
         </div>
     </div>
 
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script src="https://apis.google.com/js/api.js"></script>
+    <script src="https://accounts.google.com/gsi/client" async defer onload="initGoogleDrive()"></script>
     <script src="drive-backup.js"></script>
     <script src="app.js"></script>
+    <script>
+        // Verificar Google cuando cargue
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                console.log('Google:', typeof google);
+                console.log('drive-backup:', typeof connectDrive);
+            }, 2000);
+        });
+    </script>
 </body>
 </html>
