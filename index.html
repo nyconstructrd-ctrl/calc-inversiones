@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="InvestmentsRD">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <title>InvestmentsRD - Gestion de Ropa</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💰</text></svg>">
+    <link rel="stylesheet" href="styles.css">
+    <script>
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            if (screenId === 'home-screen') document.getElementById('nav-home').classList.add('active');
+            if (screenId === 'config-screen') document.getElementById('nav-config').classList.add('active');
+            if (screenId === 'gastos-screen') document.getElementById('nav-gastos').classList.add('active');
+            if (screenId === 'shopping-screen') document.getElementById('nav-shopping').classList.add('active');
+            if (screenId === 'sales-screen') document.getElementById('nav-sales').classList.add('active');
+            if (screenId === 'history-screen') document.getElementById('nav-history').classList.add('active');
+        }
+
+        function showHome() {
+            updateDashboard();
+            showScreen('home-screen');
+        }
+
+        function showConfig() {
+            loadConfigForm();
+            showScreen('config-screen');
+        }
+
+        function showGastos() {
+            loadGastosForm();
+            showScreen('gastos-screen');
+        }
+
+        function showShopping() {
+            updateShoppingForm();
+            renderComprasList();
+            showScreen('shopping-screen');
+        }
+
+        function showSales() {
+            loadSalesDropdown();
+            renderVentasList();
+            showScreen('sales-screen');
+        }
+
+        function showHistory() {
+            showScreen('history-screen');
+        }
+
+        function showDiezmo() {
+            document.getElementById('config-diezmo-pct').value = config.diezmoPorciento || 10;
+            showScreen('diezmo-screen');
+        }
+
+        function showDollar() {
+            document.getElementById('config-tasa').value = config.tasaCambio || 0;
+            updateDollarPreview();
+            showScreen('dollar-screen');
+        }
+
+        function updateDollarPreview() {
+            const tasa = parseFloat(document.getElementById('config-tasa').value) || 0;
+            document.getElementById('dollar-preview').textContent = '1 USD = ' + tasa.toLocaleString() + ' RD$';
+            document.getElementById('dollar-calc').innerHTML = 'Ej: 10 USD = RD$ ' + (tasa * 10).toLocaleString();
+        }
+
+        function saveDollar() {
+            config.tasaCambio = parseFloat(document.getElementById('config-tasa').value) || 0;
+            saveData();
+            document.getElementById('dash-dollar-convert').textContent = '1 USD = ' + config.tasaCambio.toLocaleString() + ' RD$';
+            document.getElementById('dash-dollar-val').textContent = config.tasaCambio.toLocaleString();
+            updateShoppingForm();
+            showHome();
+        }
+
+        function saveDiezmo() {
+            config.diezmoPorciento = parseFloat(document.getElementById('config-diezmo-pct').value) || 10;
+            saveData();
+            document.getElementById('dash-diezmo-pct').textContent = config.diezmoPorciento + '%';
+            showHome();
+        }
+    </script>
+</head>
+<body>
+    <div id="app">
+        <nav class="bottom-nav">
+            <button onclick="showHome()" class="nav-btn active" id="nav-home">🏠 Inicio</button>
+            <button onclick="showConfig()" class="nav-btn" id="nav-config">🏢 Empresa</button>
+            <button onclick="showGastos()" class="nav-btn" id="nav-gastos">💸 Gastos</button>
+            <button onclick="showShopping()" class="nav-btn" id="nav-shopping">🛒 Compras</button>
+            <button onclick="showSales()" class="nav-btn" id="nav-sales">🏷️ Ventas</button>
+            <button onclick="showHistory()" class="nav-btn" id="nav-history"><span style="color:#2196F3;">📊</span> Reportes</button>
+        </nav>
+
+        <div id="home-screen" class="screen active">
+            <h1>InvestmentsRD</h1>
+            <div class="dashboard">
+                <div class="dash-card" onclick="showDollar()" style="cursor:pointer;">
+                    <p class="dash-label" style="background:#607D8B;color:white;padding:6px 12px;border-radius:4px;font-weight:bold;">Dollar <span id="dash-dollar-convert" style="font-size:10px;display:block;margin-top:4px;">(1 USD = ? RD$)</span></p>
+                    <p class="dash-value" id="dash-dollar" style="font-size:18px;">USD <span id="dash-dollar-val" style="font-size:18px;">0</span></p>
+                </div>
+                <div class="dash-card">
+                    <p class="dash-label" style="background:#4CAF50;color:white;padding:6px 12px;border-radius:4px;font-weight:bold;">Venta</p>
+                    <p class="dash-value" id="dash-ventas" style="font-size:20px;">RD$ 0.00</p>
+                </div>
+                <div class="dash-card">
+                    <p class="dash-label" style="background:#2196F3;color:white;padding:6px 12px;border-radius:4px;font-weight:bold;">Inversion</p>
+                    <p class="dash-value" id="dash-inversion" style="font-size:20px;">RD$ 0.00</p>
+                </div>
+                <div class="dash-card" onclick="showDiezmo()" style="cursor:pointer;">
+                    <p class="dash-label" style="background:#FF9800;color:white;padding:6px 12px;border-radius:4px;font-weight:bold;">Diezmo <span id="dash-diezmo-pct">10%</span></p>
+                    <p class="dash-value" id="dash-diezmo" style="font-size:20px;">RD$ 0.00</p>
+                </div>
+                <div class="dash-card">
+                    <p class="dash-label" style="background:#9C27B0;color:white;padding:6px 12px;border-radius:4px;font-weight:bold;">Restante</p>
+                    <p class="dash-value" id="dash-resto" style="font-size:20px;">RD$ 0.00</p>
+                </div>
+                <div class="dash-card">
+                    <p class="dash-label" style="background:#f44336;color:white;padding:6px 12px;border-radius:4px;font-weight:bold;">Ganancia</p>
+                    <p class="dash-value" id="dash-utilidad" style="color:#4CAF50;font-size:20px;">RD$ 0.00</p>
+                </div>
+            </div>
+            <button onclick="showShopping()" class="btn-primary" style="margin-top: 15px;">+ Registrar Compra</button>
+            <button onclick="showSales()" class="btn-primary" style="margin-top: 10px;">$ Registrar Venta</button>
+            <div class="card" style="margin-top: 20px;">
+                <h3>[ Ultimas Compras ]</h3>
+                <div id="home-compras"></div>
+            </div>
+        </div>
+
+        <div id="config-screen" class="screen">
+            <h2>[ Datos de la Empresa ]</h2>
+            <div class="card">
+                <label>Nombre de la Empresa</label>
+                <input type="text" id="config-empresa" class="input" placeholder="Ej: Mi Tienda">
+            </div>
+            <div class="card">
+                <label>WhatsApp 💬</label>
+                <input type="tel" id="config-telefono" class="input" placeholder="Ej: 809-000-0000">
+            </div>
+            <div class="card">
+                <label>Slogan</label>
+                <input type="text" id="config-slogan" class="input" placeholder="Ej: Tu estilo, nuestra pasión">
+            </div>
+            <div class="card">
+                <label>Redes Sociales</label>
+                <input type="text" id="config-redes" class="input" placeholder="Ej: @mitienda / instagram.com/mitienda">
+            </div>
+            <button onclick="saveConfig()" class="btn-primary">Guardar</button>
+            <button onclick="showHome()" class="btn-secondary"><- Volver</button>
+        </div>
+
+        <div id="gastos-screen" class="screen">
+            <h2>[ Gastos ]</h2>
+            <div class="card">
+                <label>Costo por Libra</label>
+                <div style="display:flex;gap:5px;">
+                    <input type="number" id="config-costo-libra" class="input" placeholder="5" style="flex:1;">
+                    <select id="config-costo-libra-tipo" class="input" style="width:80px;">
+                        <option value="USD">USD</option>
+                        <option value="RD$">RD$</option>
+                    </select>
+                </div>
+            </div>
+            <div class="card">
+                <label>Publicidad Mensual</label>
+                <div style="display:flex;gap:5px;">
+                    <input type="number" id="config-publicidad" class="input" placeholder="50000" style="flex:1;">
+                    <select id="config-publicidad-tipo" class="input" style="width:80px;">
+                        <option value="USD">USD</option>
+                        <option value="RD$" selected>RD$</option>
+                    </select>
+                </div>
+            </div>
+            <div class="card">
+                <label>Otros Gastos</label>
+                <div style="display:flex;gap:5px;">
+                    <input type="number" id="config-gastos" class="input" placeholder="0" style="flex:1;">
+                    <select id="config-gastos-tipo" class="input" style="width:80px;">
+                        <option value="USD">USD</option>
+                        <option value="RD$" selected>RD$</option>
+                    </select>
+                </div>
+            </div>
+            <button onclick="saveGastos()" class="btn-primary">Guardar</button>
+            <button onclick="showHome()" class="btn-secondary"><- Volver</button>
+        </div>
+
+        <div id="shopping-screen" class="screen">
+            <h2>[ Registrar Compra ]</h2>
+            <div class="card">
+                <label>Proveedor</label>
+                <input type="text" id="compra-proveedor" class="input" placeholder="Nombre del proveedor">
+            </div>
+            <div class="card">
+                <label>Forma de Pago</label>
+                <select id="compra-pago" class="input">
+                    <option value="efectivo">Efectivo</option>
+                    <option value="credito">Credito</option>
+                    <option value="transferencia">Transferencia</option>
+                </select>
+            </div>
+            <div class="card">
+                <label>Costo del Producto</label>
+                <div style="display:flex;gap:5px;">
+                    <input type="number" id="compra-costo" class="input" placeholder="0" step="0.01" style="flex:1;">
+                    <select id="compra-costo-tipo" class="input" style="width:80px;">
+                        <option value="USD">USD</option>
+                        <option value="RD$">RD$</option>
+                    </select>
+                </div>
+            </div>
+            <div class="card">
+                <label>Costo del Envio</label>
+                <div style="display:flex;gap:5px;">
+                    <input type="number" id="compra-peso" class="input" placeholder="0" step="0.1" style="flex:1;">
+                    <select id="compra-peso-tipo" class="input" style="width:80px;">
+                        <option value="libras">Libras</option>
+                        <option value="kg">KG</option>
+                    </select>
+                </div>
+                <p id="compra-envio-preview" style="color: #4CAF50; font-size: 14px; margin-top: 5px;"></p>
+            </div>
+            <div class="card">
+                <label>Otros Gastos</label>
+                <div style="display:flex;gap:5px;">
+                    <input type="number" id="compra-otros" class="input" placeholder="0" step="0.01" style="flex:1;">
+                    <select id="compra-otros-tipo" class="input" style="width:80px;">
+                        <option value="USD">USD</option>
+                        <option value="RD$">RD$</option>
+                    </select>
+                </div>
+            </div>
+            <div class="card" style="background: #E8F5E9; border: 2px solid #4CAF50;">
+                <p style="margin: 0; font-weight: bold;">Total Inversion</p>
+                <p style="font-size: 24px; font-weight: bold; color: #2E7D32; margin: 5px 0 0 0;" id="compra-total">RD$ 0.00</p>
+            </div>
+            <button onclick="saveCompra()" class="btn-primary">Guardar Compra</button>
+            <button onclick="showHome()" class="btn-secondary"><- Volver</button>
+            <div class="card" style="margin-top: 20px;">
+                <h3>Historial de Compras</h3>
+                <div id="compras-list"></div>
+            </div>
+        </div>
+
+        <div id="sales-screen" class="screen">
+            <h2>[ Registrar Venta ]</h2>
+            <div class="card">
+                <label>Seleccionar Prenda</label>
+                <select id="venta-compra" class="input">
+                    <option value="">-- Seleccionar --</option>
+                </select>
+            </div>
+            <div class="card">
+                <label>Precio de Venta (RD$)</label>
+                <input type="number" id="venta-precio" class="input" placeholder="Ej: 150000">
+                <p id="venta-ganancia-preview" style="color: #666; font-size: 14px; margin-top: 5px;"></p>
+            </div>
+            <div class="card">
+                <label>Telefono del Cliente</label>
+                <input type="tel" id="venta-telefono" class="input" placeholder="809-000-0000" maxlength="12">
+            </div>
+            <button onclick="saveVenta()" class="btn-primary">Marcar como Vendida</button>
+            <button onclick="openWhatsApp()" class="btn-whatsapp" style="margin-top: 10px;">Enviar Factura WhatsApp</button>
+            <button onclick="showHome()" class="btn-secondary"><- Volver</button>
+            <div class="card" style="margin-top: 20px;">
+                <h3>[ Ventas Recientes ]</h3>
+                <div id="ventas-list"></div>
+            </div>
+        </div>
+
+        <div id="history-screen" class="screen">
+            <h2>[ Reportes ]</h2>
+            <div class="card">
+                <label>Tipo de Reporte</label>
+                <select id="report-type" class="input" onchange="loadReport()">
+                    <option value="">Seleccionar reporte</option>
+                    <option value="ventas">Reporte de Ventas</option>
+                    <option value="inversion">Reporte de Inversion</option>
+                    <option value="diezmo">Reporte de Diezmo</option>
+                    <option value="compras">Reporte de Compras</option>
+                    <option value="gastos">Reporte de Gastos</option>
+                    <option value="mensual">Resumen Mensual</option>
+                </select>
+                <div id="report-date-container" style="display:none; margin-top:10px;">
+                    <input type="date" id="report-date" class="input" onchange="loadReport()">
+                </div>
+                <div id="history-data"></div>
+            </div>
+            <button onclick="showHome()" class="btn-secondary" style="margin-top: 15px;"><- Volver</button>
+        </div>
+    </div>
+
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="drive-backup.js"></script>
+    <script>
+        let config = { empresa: '', telefono: '', slogan: '', costoPorLibra: 0, costoPorLibraTipo: 'USD', tasaCambio: 0, publicidadMensual: 0, publicidadTipo: 'RD$', otrosGastos: 0, otrosGastosTipo: 'RD$', diezmoPorciento: 10 };
+        let compras = [];
+        let ventas = [];
+
+        window.addEventListener('DOMContentLoaded', function() {
+            loadData();
+            updateDashboard();
+            setupEventListeners();
+        });
+
+        function loadData() {
+            try {
+                const cfg = localStorage.getItem('calc_config');
+                const com = localStorage.getItem('calc_compras');
+                const ven = localStorage.getItem('calc_ventas');
+                if (cfg) config = JSON.parse(cfg);
+                if (com) compras = JSON.parse(com);
+                if (ven) ventas = JSON.parse(ven);
+                if (!config.diezmoPorciento) config.diezmoPorciento = 10;
+            } catch (e) { console.error('Error:', e); }
+        }
+
+        function saveData() {
+            try {
+                localStorage.setItem('calc_config', JSON.stringify(config));
+                localStorage.setItem('calc_compras', JSON.stringify(compras));
+                localStorage.setItem('calc_ventas', JSON.stringify(ventas));
+            } catch (e) { console.error('Error:', e); }
+        }
+
+        function loadConfigForm() {
+            document.getElementById('config-empresa').value = config.empresa || '';
+            document.getElementById('config-telefono').value = config.telefono || '';
+            document.getElementById('config-slogan').value = config.slogan || '';
+            document.getElementById('config-redes').value = config.redes || '';
+        }
+
+        function saveConfig() {
+            config.empresa = document.getElementById('config-empresa').value;
+            config.telefono = document.getElementById('config-telefono').value;
+            config.slogan = document.getElementById('config-slogan').value;
+            config.redes = document.getElementById('config-redes').value;
+            saveData();
+            alert('Configuracion guardada');
+            showHome();
+        }
+
+        function loadGastosForm() {
+            document.getElementById('config-costo-libra').value = config.costoPorLibra || '';
+            document.getElementById('config-costo-libra-tipo').value = config.costoPorLibraTipo || 'USD';
+            document.getElementById('config-publicidad').value = config.publicidadMensual || '';
+            document.getElementById('config-publicidad-tipo').value = config.publicidadTipo || 'RD$';
+            document.getElementById('config-gastos').value = config.otrosGastos || '';
+            document.getElementById('config-gastos-tipo').value = config.otrosGastosTipo || 'RD$';
+        }
+
+        function saveGastos() {
+            var costoLibra = parseFloat(document.getElementById('config-costo-libra').value) || 0;
+            var costoLibraTipo = document.getElementById('config-costo-libra-tipo').value;
+            config.costoPorLibra = costoLibra;
+            config.costoPorLibraTipo = costoLibraTipo;
+            
+            var publicidad = parseFloat(document.getElementById('config-publicidad').value) || 0;
+            var publicidadTipo = document.getElementById('config-publicidad-tipo').value;
+            config.publicidadMensual = publicidad;
+            config.publicidadTipo = publicidadTipo;
+            
+            var otrosGastos = parseFloat(document.getElementById('config-gastos').value) || 0;
+            var otrosGastosTipo = document.getElementById('config-gastos-tipo').value;
+            config.otrosGastos = otrosGastos;
+            config.otrosGastosTipo = otrosGastosTipo;
+            
+            if (!config.costoPorLibra) { alert('Complete costo por libra'); return; }
+            saveData();
+            alert('Gastos guardados');
+            showHome();
+        }
+
+        function setupEventListeners() {
+            document.getElementById('compra-costo').addEventListener('input', updateShoppingForm);
+            document.getElementById('compra-peso').addEventListener('input', updateShoppingForm);
+            document.getElementById('venta-compra').addEventListener('change', updateVentaPreview);
+            document.getElementById('venta-precio').addEventListener('input', updateVentaPreview);
+        }
+
+        function updateShoppingForm() {
+            var costo = parseFloat(document.getElementById('compra-costo').value) || 0;
+            var costoTipo = document.getElementById('compra-costo-tipo').value;
+            var peso = parseFloat(document.getElementById('compra-peso').value) || 0;
+            var pesoTipo = document.getElementById('compra-peso-tipo').value;
+            var otros = parseFloat(document.getElementById('compra-otros').value) || 0;
+            var otrosTipo = document.getElementById('compra-otros-tipo').value;
+            
+            if (pesoTipo === 'kg') peso = peso * 2.20462;
+            
+            var tasa = config.tasaCambio || 1;
+            var costoEnRD = costoTipo === 'USD' ? costo * tasa : costo;
+            var otrosEnRD = otrosTipo === 'USD' ? otros * tasa : otros;
+            
+            var costoPorLibra = config.costoPorLibra || 0;
+            var costoLibraTipo = config.costoPorLibraTipo || 'USD';
+            if (costoLibraTipo === 'USD') {
+                costoPorLibra = costoPorLibra * tasa;
+            }
+            
+            var costoEnvioLocal = peso * costoPorLibra;
+            var totalLocal = costoEnRD + costoEnvioLocal + otrosEnRD;
+            
+            document.getElementById('compra-envio-preview').textContent = 'Envio: RD$ ' + costoEnvioLocal.toLocaleString();
+            document.getElementById('compra-total').textContent = 'RD$ ' + totalLocal.toLocaleString();
+        }
+
+        function saveCompra() {
+            var proveedor = document.getElementById('compra-proveedor').value;
+            var formaPago = document.getElementById('compra-pago').value;
+            var costo = parseFloat(document.getElementById('compra-costo').value) || 0;
+            var costoTipo = document.getElementById('compra-costo-tipo').value;
+            var peso = parseFloat(document.getElementById('compra-peso').value) || 0;
+            var pesoTipo = document.getElementById('compra-peso-tipo').value;
+            var otros = parseFloat(document.getElementById('compra-otros').value) || 0;
+            var otrosTipo = document.getElementById('compra-otros-tipo').value;
+            
+            if (!proveedor || !costo || !peso) { alert('Complete todos los campos'); return; }
+            if (!config.tasaCambio) { alert('Configure el precio del Dollar'); showDollar(); return; }
+            
+            if (pesoTipo === 'kg') peso = peso * 2.20462;
+            
+            var tasa = config.tasaCambio;
+            var costoEnRD = costoTipo === 'USD' ? costo * tasa : costo;
+            var otrosEnRD = otrosTipo === 'USD' ? otros * tasa : otros;
+            
+            var costoPorLibra = config.costoPorLibra || 0;
+            var costoLibraTipo = config.costoPorLibraTipo || 'USD';
+            if (costoLibraTipo === 'USD') {
+                costoPorLibra = costoPorLibra * tasa;
+            }
+            
+            var costoEnvioLocal = peso * costoPorLibra;
+            var costoTotalLocal = costoEnRD + costoEnvioLocal + otrosEnRD;
+            
+            compras.push({ id: Date.now(), fecha: new Date().toISOString(), proveedor: proveedor, formaPago: formaPago, costo: costo, costoTipo: costoTipo, peso: peso, pesoTipo: pesoTipo, otros: otros, otrosTipo: otrosTipo, costoEnRD: costoEnRD, costoEnvioLocal: costoEnvioLocal, otrosEnRD: otrosEnRD, costoTotalLocal: costoTotalLocal, vendido: false });
+            saveData();
+            document.getElementById('compra-proveedor').value = '';
+            document.getElementById('compra-costo').value = '';
+            document.getElementById('compra-peso').value = '';
+            document.getElementById('compra-otros').value = '';
+            updateShoppingForm();
+            renderComprasList();
+            alert('Compra registrada: RD$ ' + costoTotalLocal.toLocaleString());
+        }
+
+        function renderComprasList() {
+            const container = document.getElementById('compras-list');
+            const containerHome = document.getElementById('home-compras');
+            const todas = compras.slice().reverse();
+            if (todas.length === 0) { container.innerHTML = '<p style="color:#999">Sin compras</p>'; containerHome.innerHTML = '<p style="color:#999">Sin compras</p>'; return; }
+            var html = '';
+            todas.forEach(function(c) { 
+                var estado = c.vendido ? '<span style="color:#4CAF50;">(Vendida)</span>' : '<span style="color:#FF9800;">(Pendiente)</span>';
+                html += '<div class="list-item"><div class="item-title">' + c.proveedor + ' ' + estado + '</div><div class="item-detail">Total: RD$ ' + c.costoTotalLocal.toLocaleString() + '</div><div style="display:flex;gap:5px;"><button class="delete-btn" style="background:#2196F3;" onclick="editCompra(' + c.id + ')">Editar</button><button class="delete-btn" onclick="deleteCompra(' + c.id + ')">Eliminar</button></div></div>'; 
+            });
+            container.innerHTML = html;
+            containerHome.innerHTML = html;
+        }
+
+        function deleteCompra(id) { if (confirm('Eliminar compra?')) { compras = compras.filter(function(c) { return c.id !== id; }); saveData(); renderComprasList(); } }
+
+        function editCompra(id) {
+            var compra = compras.find(function(c) { return c.id === id; });
+            if (!compra) return;
+            document.getElementById('compra-proveedor').value = compra.proveedor;
+            document.getElementById('compra-pago').value = compra.formaPago || 'efectivo';
+            document.getElementById('compra-costo').value = compra.costo || '';
+            document.getElementById('compra-costo-tipo').value = compra.costoTipo || 'USD';
+            document.getElementById('compra-peso').value = compra.peso || '';
+            document.getElementById('compra-peso-tipo').value = compra.pesoTipo || 'libras';
+            document.getElementById('compra-otros').value = compra.otros || '';
+            document.getElementById('compra-otros-tipo').value = compra.otrosTipo || 'USD';
+            updateShoppingForm();
+            if (confirm('Esta editando la compra. Guardar cambios?')) {
+                saveEditCompra(id);
+            }
+        }
+
+        function saveEditCompra(id) {
+            var index = compras.findIndex(function(c) { return c.id === id; });
+            if (index === -1) return;
+            
+            var formaPago = document.getElementById('compra-pago').value;
+            var costo = parseFloat(document.getElementById('compra-costo').value) || 0;
+            var costoTipo = document.getElementById('compra-costo-tipo').value;
+            var peso = parseFloat(document.getElementById('compra-peso').value) || 0;
+            var pesoTipo = document.getElementById('compra-peso-tipo').value;
+            var otros = parseFloat(document.getElementById('compra-otros').value) || 0;
+            var otrosTipo = document.getElementById('compra-otros-tipo').value;
+            
+            if (pesoTipo === 'kg') peso = peso * 2.20462;
+            
+            var tasa = config.tasaCambio || 1;
+            var costoEnRD = costoTipo === 'USD' ? costo * tasa : costo;
+            var otrosEnRD = otrosTipo === 'USD' ? otros * tasa : otros;
+            
+            var costoPorLibra = config.costoPorLibra || 0;
+            var costoLibraTipo = config.costoPorLibraTipo || 'USD';
+            if (costoLibraTipo === 'USD') costoPorLibra = costoPorLibra * tasa;
+            
+            var costoEnvioLocal = peso * costoPorLibra;
+            var costoTotalLocal = costoEnRD + costoEnvioLocal + otrosEnRD;
+            
+            compras[index].proveedor = document.getElementById('compra-proveedor').value;
+            compras[index].costo = costo;
+            compras[index].costoTipo = costoTipo;
+            compras[index].peso = peso;
+            compras[index].pesoTipo = pesoTipo;
+            compras[index].otros = otros;
+            compras[index].otrosTipo = otrosTipo;
+            compras[index].costoEnRD = costoEnRD;
+            compras[index].costoEnvioLocal = costoEnvioLocal;
+            compras[index].otrosEnRD = otrosEnRD;
+            compras[index].costoTotalLocal = costoTotalLocal;
+            
+            saveData();
+            renderComprasList();
+            alert('Compra actualizada');
+        }
+
+        function loadSalesDropdown() {
+            var select = document.getElementById('venta-compra');
+            var pendientes = compras.filter(function(c) { return !c.vendido; });
+            var html = '<option value="">-- Seleccionar --</option>';
+            pendientes.forEach(function(c) { html += '<option value="' + c.id + '">' + c.proveedor + ' - RD$ ' + c.costoTotalLocal.toLocaleString() + '</option>'; });
+            select.innerHTML = html;
+        }
+
+        function updateVentaPreview() {
+            var compraId = document.getElementById('venta-compra').value;
+            var precioVenta = parseFloat(document.getElementById('venta-precio').value) || 0;
+            if (!compraId) { document.getElementById('venta-ganancia-preview').textContent = 'Seleccione prenda'; return; }
+            var compra = compras.find(function(c) { return c.id == compraId; });
+            if (!compra) return;
+            var utilidadBruta = precioVenta - compra.costoTotalLocal;
+            var diezmo = Math.max(0, utilidadBruta * (config.diezmoPorciento / 100));
+            var gananciaNeta = utilidadBruta - diezmo;
+            document.getElementById('venta-ganancia-preview').innerHTML = 'Costo: RD$ ' + compra.costoTotalLocal.toLocaleString() + '<br>Ganancia: RD$ ' + gananciaNeta.toLocaleString();
+        }
+
+        function saveVenta() {
+            var compraId = document.getElementById('venta-compra').value;
+            var precioVenta = parseFloat(document.getElementById('venta-precio').value) || 0;
+            var telefono = document.getElementById('venta-telefono').value.trim();
+            if (!compraId || !precioVenta) { alert('Seleccione prenda y precio'); return; }
+            var compra = compras.find(function(c) { return c.id == compraId; });
+            if (!compra) return;
+            var utilidadBruta = precioVenta - compra.costoTotalLocal;
+            var diezmo = Math.max(0, utilidadBruta * (config.diezmoPorciento / 100));
+            ventas.push({ id: Date.now(), fecha: new Date().toISOString(), compraId: compra.id, proveedor: compra.proveedor, costoPrenda: compra.costoTotalLocal, precioVenta: precioVenta, diezmo: diezmo, telefono: telefono });
+            var index = compras.findIndex(function(c) { return c.id == compraId; });
+            if (index !== -1) compras[index].vendido = true;
+            saveData();
+            document.getElementById('venta-precio').value = '';
+            document.getElementById('venta-telefono').value = '';
+            loadSalesDropdown();
+            renderVentasList();
+            alert('Venta registrada');
+        }
+
+        function renderVentasList() {
+            var container = document.getElementById('ventas-list');
+            var recientes = ventas.slice().reverse().slice(0, 10);
+            if (recientes.length === 0) { container.innerHTML = '<p style="color:#999">Sin ventas</p>'; return; }
+            var html = '';
+            recientes.forEach(function(v) { var ganancia = v.precioVenta - v.costoPrenda - v.diezmo; html += '<div class="list-item"><div class="item-title">' + v.proveedor + '</div><div class="item-value">Ganancia: RD$ ' + ganancia.toLocaleString() + '</div></div>'; });
+            container.innerHTML = html;
+        }
+
+        function openWhatsApp() {
+            var telefono = document.getElementById('venta-telefono').value.trim();
+            if (!telefono) { alert('Ingrese telefono'); return; }
+            var compraId = document.getElementById('venta-compra').value;
+            if (!compraId) { alert('Seleccione prenda'); return; }
+            var venta = ventas.find(function(v) { return v.compraId == compraId; });
+            if (venta) { var mensaje = 'FACTURA\nProveedor: ' + venta.proveedor + '\nCosto: RD$ ' + venta.costoPrenda.toLocaleString() + '\nVenta: RD$ ' + venta.precioVenta.toLocaleString() + '\nGanancia: RD$ ' + (venta.precioVenta - venta.costoPrenda - venta.diezmo).toLocaleString(); window.open('https://wa.me/' + telefono.replace(/\D/g, '') + '?text=' + encodeURIComponent(mensaje), '_blank'); }
+        }
+
+        function updateDashboard() {
+            var now = new Date();
+            var ventasMes = ventas.filter(function(v) { var fecha = new Date(v.fecha); return fecha.getMonth() === now.getMonth() && fecha.getFullYear() === now.getFullYear(); });
+            var comprasMes = compras.filter(function(c) { var fecha = new Date(c.fecha); return fecha.getMonth() === now.getMonth() && fecha.getFullYear() === now.getFullYear(); });
+            var ventaTotal = ventasMes.reduce(function(sum, v) { return sum + v.precioVenta; }, 0);
+            var inversionMes = comprasMes.reduce(function(sum, c) { return sum + c.costoTotalLocal; }, 0);
+            var diezmoMes = ventasMes.reduce(function(sum, v) { return sum + v.diezmo; }, 0);
+            var restoPorVender = compras.filter(function(c) { return !c.vendido; }).reduce(function(sum, c) { return sum + c.costoTotalLocal; }, 0);
+            var publicidad = config.publicidadMensual || 0;
+            var utilidadNeta = ventaTotal - inversionMes - publicidad - diezmoMes;
+            document.getElementById('dash-dollar-convert').textContent = '1 USD = ' + (config.tasaCambio || 0).toLocaleString() + ' RD$';
+            document.getElementById('dash-dollar-val').textContent = (config.tasaCambio || 0).toLocaleString();
+            document.getElementById('dash-ventas').textContent = 'RD$ ' + ventaTotal.toLocaleString();
+            document.getElementById('dash-inversion').textContent = 'RD$ ' + inversionMes.toLocaleString();
+            document.getElementById('dash-diezmo').textContent = 'RD$ ' + diezmoMes.toLocaleString();
+            document.getElementById('dash-diezmo-pct').textContent = (config.diezmoPorciento || 10) + '%';
+            document.getElementById('dash-resto').textContent = 'RD$ ' + restoPorVender.toLocaleString();
+            var utilEl = document.getElementById('dash-utilidad');
+            utilEl.textContent = 'RD$ ' + utilidadNeta.toLocaleString();
+            renderComprasList();
+        }
+
+        function loadReport() {
+            var tipo = document.getElementById('report-type').value;
+            var container = document.getElementById('history-data');
+            var fechaInput = document.getElementById('report-date');
+            var fecha = fechaInput.value ? new Date(fechaInput.value) : new Date();
+            
+            if (tipo === 'mensual') {
+                document.getElementById('report-date-container').style.display = 'none';
+                var ventasMes = ventas.filter(function(v) { var f = new Date(v.fecha); return f.getMonth() === fecha.getMonth() && f.getFullYear() === fecha.getFullYear(); });
+                var comprasMes = compras.filter(function(c) { var f = new Date(c.fecha); return f.getMonth() === fecha.getMonth() && f.getFullYear() === fecha.getFullYear(); });
+                var ventaTotal = ventasMes.reduce(function(sum, v) { return sum + v.precioVenta; }, 0);
+                var inversionMes = comprasMes.reduce(function(sum, c) { return sum + c.costoTotalLocal; }, 0);
+                var diezmoTotal = ventasMes.reduce(function(sum, v) { return sum + v.diezmo; }, 0);
+                var publicidad = config.publicidadMensual || 0;
+                var utilidad = ventaTotal - inversionMes - publicidad - diezmoTotal;
+                container.innerHTML = '<h4>Resumen Mensual - ' + fecha.toLocaleString('default', {month:'long',year:'numeric'}) + '</h4><p><strong>Ventas:</strong> RD$ ' + ventaTotal.toLocaleString() + '</p><p><strong>Inversion:</strong> RD$ ' + inversionMes.toLocaleString() + '</p><p><strong>Diezmo:</strong> RD$ ' + diezmoTotal.toLocaleString() + '</p><p><strong>Utilidad:</strong> RD$ ' + utilidad.toLocaleString() + '</p>';
+            } else if (tipo === 'ventas') {
+                document.getElementById('report-date-container').style.display = 'block';
+                var ventasDia = ventas.filter(function(v) { var f = new Date(v.fecha); return f.getDate() === fecha.getDate() && f.getMonth() === fecha.getMonth() && f.getFullYear() === fecha.getFullYear(); });
+                var ventaTotal = ventasDia.reduce(function(sum, v) { return sum + v.precioVenta; }, 0);
+                container.innerHTML = '<h4>Reporte de Ventas - ' + fecha.toLocaleDateString() + '</h4><p><strong>Total Ventas:</strong> RD$ ' + ventaTotal.toLocaleString() + '</p><p>Cantidad: ' + ventasDia.length + '</p>';
+            } else if (tipo === 'inversion') {
+                document.getElementById('report-date-container').style.display = 'block';
+                var comprasDia = compras.filter(function(c) { var f = new Date(c.fecha); return f.getDate() === fecha.getDate() && f.getMonth() === fecha.getMonth() && f.getFullYear() === fecha.getFullYear(); });
+                var inversionDia = comprasDia.reduce(function(sum, c) { return sum + c.costoTotalLocal; }, 0);
+                container.innerHTML = '<h4>Reporte de Inversion - ' + fecha.toLocaleDateString() + '</h4><p><strong>Total Inversion:</strong> RD$ ' + inversionDia.toLocaleString() + '</p><p>Cantidad: ' + comprasDia.length + '</p>';
+            } else if (tipo === 'diezmo') {
+                document.getElementById('report-date-container').style.display = 'block';
+                var ventasDia = ventas.filter(function(v) { var f = new Date(v.fecha); return f.getDate() === fecha.getDate() && f.getMonth() === fecha.getMonth() && f.getFullYear() === fecha.getFullYear(); });
+                var diezmoTotal = ventasDia.reduce(function(sum, v) { return sum + v.diezmo; }, 0);
+                container.innerHTML = '<h4>Reporte de Diezmo - ' + fecha.toLocaleDateString() + '</h4><p><strong>Total Diezmo:</strong> RD$ ' + diezmoTotal.toLocaleString() + '</p>';
+            } else if (tipo === 'compras') {
+                document.getElementById('report-date-container').style.display = 'block';
+                var comprasDia = compras.filter(function(c) { var f = new Date(c.fecha); return f.getDate() === fecha.getDate() && f.getMonth() === fecha.getMonth() && f.getFullYear() === fecha.getFullYear(); });
+                container.innerHTML = '<h4>Reporte de Compras - ' + fecha.toLocaleDateString() + '</h4><p>Cantidad: ' + comprasDia.length + '</p>';
+                comprasDia.forEach(function(c) { container.innerHTML += '<p style="padding:5px;border-bottom:1px solid #eee;">' + c.proveedor + ': RD$ ' + c.costoTotalLocal.toLocaleString() + '</p>'; });
+            } else if (tipo === 'gastos') {
+                document.getElementById('report-date-container').style.display = 'block';
+                var publicidad = config.publicidadMensual || 0;
+                var otros = config.otrosGastos || 0;
+                var totalGastos = publicidad + otros;
+                container.innerHTML = '<h4>Reporte de Gastos - ' + fecha.toLocaleDateString() + '</h4><p><strong>Publicidad:</strong> RD$ ' + publicidad.toLocaleString() + '</p><p><strong>Otros Gastos:</strong> RD$ ' + otros.toLocaleString() + '</p><p><strong>Total Gastos:</strong> RD$ ' + totalGastos.toLocaleString() + '</p>';
+            } else {
+                container.innerHTML = '';
+            }
+        }
+
+        function loadDateData() {
+            var fechaSeleccionada = document.getElementById('history-date').value;
+            var container = document.getElementById('history-data');
+            if (!fechaSeleccionada) { container.innerHTML = ''; return; }
+            var fecha = new Date(fechaSeleccionada);
+            var anio = fecha.getFullYear();
+            var mes = fecha.getMonth();
+            var dia = fecha.getDate();
+            var ventasDia = ventas.filter(function(v) { var f = new Date(v.fecha); return f.getDate() === dia && f.getMonth() === mes && f.getFullYear() === anio; });
+            var comprasDia = compras.filter(function(c) { var f = new Date(c.fecha); return f.getDate() === dia && f.getMonth() === mes && f.getFullYear() === anio; });
+            var ventaTotal = ventasDia.reduce(function(sum, v) { return sum + v.precioVenta; }, 0);
+            var inversionDia = comprasDia.reduce(function(sum, c) { return sum + c.costoTotalLocal; }, 0);
+            var diezmoTotal = ventasDia.reduce(function(sum, v) { return sum + v.diezmo; }, 0);
+            var publicidad = config.publicidadMensual || 0;
+            var utilidad = ventaTotal - inversionDia - publicidad - diezmoTotal;
+            container.innerHTML = '<div style="margin-top:10px"><p><strong>Fecha:</strong> ' + fecha.toLocaleDateString() + '</p><p><strong>Ventas:</strong> RD$ ' + ventaTotal.toLocaleString() + '</p><p><strong>Inversion:</strong> RD$ ' + inversionDia.toLocaleString() + '</p><p><strong>Diezmo:</strong> RD$ ' + diezmoTotal.toLocaleString() + '</p><p><strong>Utilidad:</strong> RD$ ' + utilidad.toLocaleString() + '</p></div>';
+        }
+
+        function loadDateData() {
+            var fechaSeleccionada = document.getElementById('history-date').value;
+            var container = document.getElementById('history-data');
+            if (!fechaSeleccionada) { container.innerHTML = ''; return; }
+            var fecha = new Date(fechaSeleccionada);
+            var anio = fecha.getFullYear();
+            var mes = fecha.getMonth();
+            var dia = fecha.getDate();
+            var ventasDia = ventas.filter(function(v) { var f = new Date(v.fecha); return f.getDate() === dia && f.getMonth() === mes && f.getFullYear() === anio; });
+            var comprasDia = compras.filter(function(c) { var f = new Date(c.fecha); return f.getDate() === dia && f.getMonth() === mes && f.getFullYear() === anio; });
+            var ventaTotal = ventasDia.reduce(function(sum, v) { return sum + v.precioVenta; }, 0);
+            var inversionDia = comprasDia.reduce(function(sum, c) { return sum + c.costoTotalLocal; }, 0);
+            var diezmoTotal = ventasDia.reduce(function(sum, v) { return sum + v.diezmo; }, 0);
+            var publicidad = config.publicidadMensual || 0;
+            var utilidad = ventaTotal - inversionDia - publicidad - diezmoTotal;
+            container.innerHTML = '<div style="margin-top:10px"><p><strong>Fecha:</strong> ' + fecha.toLocaleDateString() + '</p><p><strong>Ventas:</strong> RD$ ' + ventaTotal.toLocaleString() + '</p><p><strong>Inversion:</strong> RD$ ' + inversionDia.toLocaleString() + '</p><p><strong>Diezmo:</strong> RD$ ' + diezmoTotal.toLocaleString() + '</p><p><strong>Utilidad:</strong> RD$ ' + utilidad.toLocaleString() + '</p></div>';
+        }
+
+        function generateReport() { alert('Reporte generado'); }
+        function exportData() { var data = { config: config, compras: compras, ventas: ventas }; var blob = new Blob([JSON.stringify(data)], { type: 'application/json' }); var url = URL.createObjectURL(blob); var a = document.createElement('a'); a.href = url; a.download = 'calc-inversiones-backup.json'; a.click(); URL.revokeObjectURL(url); }
+        function importData(event) { var file = event.target.files[0]; if (!file) return; var reader = new FileReader(); reader.onload = function(e) { try { var data = JSON.parse(e.target.result); if (data.config) config = data.config; if (data.compras) compras = data.compras; if (data.ventas) ventas = data.ventas; saveData(); alert('Datos restaurados'); showHome(); } catch (err) { alert('Error: ' + err.message); } }; reader.readAsText(file); }
+
+        // Init Google Drive
+        window.addEventListener('load', function() {
+            if (typeof google !== 'undefined' && google.accounts) {
+                initGoogleDrive();
+                if (localStorage.getItem('calc_drive_connected') === 'true') {
+                    isConnected = true;
+                    updateDriveStatus(true);
+                    getOrCreateFolder();
+                }
+            }
+        });
+    </script>
+</body>
+</html>
