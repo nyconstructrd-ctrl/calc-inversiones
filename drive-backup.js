@@ -95,8 +95,9 @@ async function getOrCreateFolder() {
     if (!accessToken) return;
     
     try {
+        // Buscar carpeta existente
         const searchResponse = await fetch(
-            'https://www.googleapis.com/drive/v3/files?q=name%3D%27' + encodeURIComponent(DRIVE_FOLDER_NAME) + '%27%20and%20mimeType%3D%27application%2Fvnd.google-apps.folder%27%20and%20trashed%3Dfalse',
+            'https://www.googleapis.com/drive/v3/files?q=name%3D%27' + encodeURIComponent(DRIVE_FOLDER_NAME) + %27%20and%20mimeType%3D%27application%2Fvnd.google-apps.folder%27%20and%20trashed%3Dfalse',
             { headers: { 'Authorization': 'Bearer ' + accessToken } }
         );
         const searchData = await searchResponse.json();
@@ -105,6 +106,7 @@ async function getOrCreateFolder() {
             driveFolderId = searchData.files[0].id;
             console.log('📁 Carpeta encontrada:', driveFolderId);
         } else {
+            // Crear carpeta
             const createResponse = await fetch(
                 'https://www.googleapis.com/drive/v3/files',
                 {
@@ -144,6 +146,7 @@ async function uploadBackupToDrive() {
         await getOrCreateFolder();
     }
     
+    // Preparar datos
     const data = {
         config: window.config,
         compras: window.compras,
@@ -155,11 +158,13 @@ async function uploadBackupToDrive() {
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const filename = `calc-inversiones-backup-${new Date().toISOString().split('T')[0]}.json`;
     
+    // Metadata
     const metadata = {
         name: filename,
         parents: [driveFolderId]
     };
     
+    // Crear multipart request
     const boundary = '-------314159265358979323846';
     const delimiter = "\r\n--" + boundary + "\r\n";
     const closeDelimiter = "\r\n--" + boundary + "--";
