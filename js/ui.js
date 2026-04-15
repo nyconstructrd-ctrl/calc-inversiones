@@ -388,8 +388,51 @@ function updatePreviewFactura() {
     `;
 }
 
+function toggleDarkMode() {
+    const body = document.body;
+    const isDark = body.classList.toggle('dark-mode');
+    localStorage.setItem('calc_dark_mode', isDark ? 'true' : 'false');
+    const btn = document.getElementById('btn-dark-mode');
+    if (btn) {
+        btn.textContent = isDark ? '☀️' : '🌙';
+        btn.style.background = isDark ? '#fff' : '#333';
+        btn.style.color = isDark ? '#333' : '#fff';
+    }
+}
+
+function loadDarkMode() {
+    const savedDark = localStorage.getItem('calc_dark_mode') === 'true';
+    if (savedDark) {
+        document.body.classList.add('dark-mode');
+        const btn = document.getElementById('btn-dark-mode');
+        if (btn) {
+            btn.textContent = '☀️';
+            btn.style.background = '#fff';
+            btn.style.color = '#333';
+        }
+    }
+}
+
+function showDiezmo() {
+    const actual = config.diezmoPorciento || 10;
+    const nuevo = prompt(`Porcentaje actual: ${actual}%\n\nIngrese nuevo porcentaje de diezmo (0-100):`, actual);
+    if (nuevo === null) return;
+    const valor = parseFloat(nuevo);
+    if (isNaN(valor) || valor < 0 || valor > 100) {
+        alert('Valor inválido');
+        return;
+    }
+    config.diezmoPorciento = valor;
+    saveData();
+    updateDashboard();
+    alert(`Diezmo actualizado a ${valor}%`);
+}
+
 window.showDisenoFactura = showDisenoFactura;
 window.saveDisenoFactura = saveDisenoFactura;
 window.updatePreviewFactura = updatePreviewFactura;
 window.updateDashboard = updateDashboard;
 window.checkAlertasTarjetas = checkAlertasTarjetas;
+window.toggleDarkMode = toggleDarkMode;
+window.loadDarkMode = loadDarkMode;
+window.showDiezmo = showDiezmo;
