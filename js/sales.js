@@ -21,15 +21,51 @@ function getFacturaContador() {
 function renderVentasList() {
     const container = document.getElementById('ventas-list');
     if (!container) return;
-    const ultimas = ventas.slice(-10).reverse();
     
-    if (ultimas.length === 0) {
-        container.innerHTML = '<p style="color:#999;text-align:center;">Sin ventas registradas</p>';
+    // Obtener filtro
+    const filtroEl = document.getElementById('ventas-filtro-fecha');
+    const filtro = filtroEl ? filtroEl.value : 'hoy'; // Por defecto Hoy
+    
+    // Filtrar por fecha
+    let ventasFiltradas = [...ventas];
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+    
+    if (filtro === 'hoy') {
+        ventasFiltradas = ventasFiltradas.filter(v => new Date(v.fecha) >= hoy);
+    } else if (filtro === 'semana') {
+        // Lunes como inicio de semana
+        const diaSemana = hoy.getDay();
+        const inicioSemana = new Date(hoy);
+        inicioSemana.setDate(hoy.getDate() - (diaSemana === 0 ? 6 : diaSemana - 1));
+        ventasFiltradas = ventasFiltradas.filter(v => new Date(v.fecha) >= inicioSemana);
+    } else if (filtro === 'mes') {
+        const inicioMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+        ventasFiltradas = ventasFiltradas.filter(v => new Date(v.fecha) >= inicioMes);
+    } else if (filtro === 'todas') {
+        ventasFiltradas = ventasFiltradas.slice(-50); // Últimas 50 para no sobrecargar
+    }
+    
+    const mostrar = ventasFiltradas.reverse();
+    
+    // Calcular total del filtro actual
+    const totalFiltro = mostrar.reduce((sum, v) => sum + v.totalVenta, 0);
+    let html = '';
+    
+    if (mostrar.length > 0) {
+        // Mostrar resumen total arriba
+        html += `<div style="background: #E8F5E9; padding: 10px 15px; border-radius: 8px; margin-bottom: 12px; border-left: 4px solid #4CAF50; display:flex; justify-content:space-between; align-items:center;">
+            <div style="font-size: 13px; color: #2E7D32; font-weight:bold;">Total del periodo:</div>
+            <div style="font-size: 18px; font-weight: bold; color: #2E7D32;">${formatCurrency(totalFiltro)}</div>
+        </div>`;
+    }
+    
+    if (mostrar.length === 0) {
+        container.innerHTML = '<p style="color:#999;text-align:center;padding:20px 0;">No hay ventas en este periodo</p>';
         return;
     }
     
-    let html = '';
-    ultimas.forEach(v => {
+    mostrar.forEach(v => {
         const metodoIcon = v.metodoPago === 'efectivo' ? '💵' : v.metodoPago === 'tarjeta' ? '💳' : '🏦';
         const numFactura = v.facturaNum || '';
         html += `<div class="list-item" style="position: relative;">
