@@ -95,3 +95,4 @@ drive-backup.js
 
 # Datos de usuario (para desarrollo local)
 usuarios.json
+.vercel

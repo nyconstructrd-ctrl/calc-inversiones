@@ -214,13 +214,6 @@ function updateDashboard() {
     setText('dash-tasa', config.tasaCambio ? 'RD$ ' + config.tasaCambio : 'RD$ 0');
     setText('dash-gastos', format(gastosActivosMonto));
     setText('dash-inventario-articulos', totalArticulosInv + ' artículos');
-    
-    // Si hay montos para consolidar, mostrar botón
-    const btnConsolidar = document.getElementById('btn-consolidar-caja');
-    if (btnConsolidar) {
-        btnConsolidar.style.display = (ventasTotales > 0 || inversionActiva > 0) ? 'block' : 'none';
-    }
-    
     const diezmoLabel = document.getElementById('dash-diezmo-label');
     if (diezmoLabel) {
         diezmoLabel.innerHTML = 'Diezmo (' + (config.diezmoPorciento || 10) + '%) <span style="font-size:12px;">⚙️</span>';
@@ -262,40 +255,6 @@ window.showConfig = showConfig;
 window.showShopping = showShopping;
 window.showSales = showSales;
 window.showHistory = showHistory;
-// Función para consolidar/cerrar periodo - mueve datos actuales al historial
-function consolidarTotales() {
-    if (!confirm('¿Cerrar periodo actual?\n\nEsto moverá los datos actuales al historial de reportes y reseteará los contadores del inicio para un nuevo ciclo.')) {
-        return;
-    }
-    
-    // Crear registro de consolidación con fecha actual
-    const consolidacion = {
-        fecha: new Date().toISOString(),
-        fechaCierre: new Date().toLocaleDateString('es-DO'),
-        ventasTotales: ventas.length,
-        montoVentas: ventas.reduce((sum, v) => sum + (v.totalVenta || 0), 0),
-        inversionTotal: compras.reduce((sum, c) => sum + (c.costoTotalLocal || 0), 0),
-        gananciaTotal: ventas.reduce((sum, v) => sum + ((v.totalVenta || 0) - ((v.costoTotal || 0) * (config.tasaCambio || 1))), 0),
-        diezmoTotal: ventas.reduce((sum, v) => sum + (v.diezmo || 0), 0)
-    };
-    
-    // Guardar en historial de consolidaciones
-    if (!window.consolidaciones) window.consolidaciones = [];
-    window.consolidaciones.push(consolidacion);
-    localStorage.setItem('calc_consolidaciones', JSON.stringify(window.consolidaciones));
-    
-    // Resetear contadores del dashboard (marcar como consolidado)
-    localStorage.setItem('calc_ultima_consolidacion', new Date().toISOString());
-    
-    // Ocultar botón de consolidar
-    const btnConsolidar = document.getElementById('btn-consolidar-caja');
-    if (btnConsolidar) btnConsolidar.style.display = 'none';
-    
-    alert(`✅ Periodo cerrado exitosamente\n\nFecha: ${consolidacion.fechaCierre}\nVentas: ${formatCurrency(consolidacion.montoVentas)}\nInversión: ${formatCurrency(consolidacion.inversionTotal)}`);
-    
-    console.log('[APP] Periodo consolidado:', consolidacion);
-}
-
 window.showHelp = showHelp;
 window.showPassword = showPassword;
 window.showDisenoFactura = showDisenoFactura;
@@ -303,4 +262,3 @@ window.saveDisenoFactura = saveDisenoFactura;
 window.saveConfig = saveConfig;
 window.updateDashboard = updateDashboard;
 window.updatePreviewFactura = updatePreviewFactura;
-window.consolidarTotales = consolidarTotales;
