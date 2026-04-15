@@ -338,11 +338,58 @@ function checkAlertasTarjetas() {
     });
 }
 
-// Asegurar que se renderice cuando se abra la app o al abrir compras
-const originalShowShopping = window.showShopping;
-window.showShopping = function() {
-    window.renderMetodosPago();
-    if(typeof originalShowShopping === 'function') originalShowShopping();
-};
+function showDisenoFactura() {
+    loadData();
+    showScreen('diseno-factura-screen');
+    
+    // Rellenar campos
+    if (document.getElementById('df-encabezado')) document.getElementById('df-encabezado').value = config.facturaEncabezado || '';
+    if (document.getElementById('df-pie')) document.getElementById('df-pie').value = config.facturaPie || '';
+    if (document.getElementById('df-color')) document.getElementById('df-color').value = config.facturaColor || '#4CAF50';
+    
+    updatePreviewFactura();
+}
 
+function saveDisenoFactura() {
+    config.facturaEncabezado = document.getElementById('df-encabezado').value.trim();
+    config.facturaPie = document.getElementById('df-pie').value.trim();
+    config.facturaColor = document.getElementById('df-color').value;
+    saveData();
+    alert('🎨 Diseño de factura guardado con éxito');
+    showConfig();
+}
+
+function updatePreviewFactura() {
+    const preview = document.getElementById('preview-factura');
+    if (!preview) return;
+    
+    const encabezado = document.getElementById('df-encabezado').value || 'TU ENCABEZADO AQUÍ';
+    const pie = document.getElementById('df-pie').value || 'MENSAJE FINAL';
+    const color = document.getElementById('df-color').value;
+    
+    preview.innerHTML = `
+        <div style="text-align: center; border-bottom: 1px dashed #ccc; padding-bottom: 10px; margin-bottom: 10px;">
+            <div style="font-weight: bold; font-size: 16px; color: ${color};">${config.nombre || 'Nombre del Negocio'}</div>
+            <div style="font-size: 10px; color: #666; white-space: pre-line;">${encabezado}</div>
+        </div>
+        <div style="font-size: 9px; color: #444;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                <span>CLIENTE: Juan Pérez</span>
+                <span>FECHA: 12/04/2026</span>
+            </div>
+            <div style="border-bottom: 1px solid #eee; margin: 8px 0;"></div>
+            <div style="font-family: monospace;">1x Vestido Rojo ......... $1,200.00</div>
+            <div style="border-bottom: 1px solid #eee; margin: 8px 0;"></div>
+            <div style="text-align: right; font-weight: bold; font-size: 14px; color: ${color};">TOTAL: $1,200.00</div>
+        </div>
+        <div style="text-align: center; margin-top: 15px; font-size: 10px; color: #888; border-top: 1px dashed #ccc; pt: 8px; white-space: pre-line;">
+            ${pie}
+        </div>
+    `;
+}
+
+window.showDisenoFactura = showDisenoFactura;
+window.saveDisenoFactura = saveDisenoFactura;
 window.updatePreviewFactura = updatePreviewFactura;
+window.updateDashboard = updateDashboard;
+window.checkAlertasTarjetas = checkAlertasTarjetas;

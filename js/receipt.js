@@ -30,15 +30,22 @@ function sendVentaWhatsApp(id) {
     ctx.textAlign = 'center';
     
     // Encabezado
-    ctx.fillStyle = '#4CAF50';
+    const brandColor = config.facturaColor || '#4CAF50';
+    ctx.fillStyle = brandColor;
     ctx.font = 'bold 22px Arial';
     ctx.fillText(config.nombre || 'RD-INVESTMENTS', canvas.width / 2, y);
     
-    y += 25;
+    y += 20;
+    ctx.font = '11px Arial';
     ctx.fillStyle = '#666';
-    ctx.font = '14px Arial';
-    if (config.slogan) { ctx.fillText(config.slogan, canvas.width / 2, y); y += 20; }
-    if (config.telefono) { ctx.fillText('Tel: ' + config.telefono, canvas.width / 2, y); y += 20; }
+    const subHeader = config.facturaEncabezado || config.slogan || '';
+    subHeader.split('\n').forEach(lh => {
+        ctx.fillText(lh, canvas.width / 2, y);
+        y += 12;
+    });
+    
+    y += 10;
+    if (config.telefono && !config.facturaEncabezado) { ctx.fillText('Tel: ' + config.telefono, canvas.width / 2, y); y += 20; }
     
     y += 10;
     ctx.setLineDash([5, 5]);
@@ -90,7 +97,7 @@ function sendVentaWhatsApp(id) {
     }
     
     y += 30;
-    ctx.fillStyle = '#4CAF50';
+    ctx.fillStyle = brandColor;
     ctx.font = 'bold 20px Arial';
     ctx.fillText('TOTAL: ' + formatCurrency(totalVenta), 370, y);
 
