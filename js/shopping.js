@@ -98,7 +98,11 @@ function saveCompra() {
     const otrosEnRD = otrosTipo === 'USD' ? otros * tasa : otros;
     const totalRD = costoEnRD + envio + otrosEnRD;
     
-    const metodoPagoVal = document.getElementById('compra-metodo-pago') ? document.getElementById('compra-metodo-pago').value : 'efectivo';
+    const metodoPagoVal = document.getElementById('compra-metodo-pago')?.value;
+    if (!metodoPagoVal) {
+        alert('❌ Error: Debes seleccionar una Tarjeta de Crédito para registrar esta compra.');
+        return;
+    }
 
     const compra = {
         id: window.compraEditandoId || Date.now(),

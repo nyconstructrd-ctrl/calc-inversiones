@@ -291,7 +291,7 @@ window.renderMetodosPago = function() {
     const select = document.getElementById('compra-metodo-pago');
     if (!select) return;
     
-    let html = '<option value="efectivo" selected>💵 Efectivo / Transferencia / Débito</option>';
+    let html = '<option value="" disabled selected>💳 Selecciona una Tarjeta...</option>';
     if (window.tarjetas && window.tarjetas.length > 0) {
         window.tarjetas.forEach(t => {
             html += `<option value="${t.id}">💳 ${t.banco} (*${t.ultimos4})</option>`;
