@@ -1,0 +1,72 @@
+[
+  {
+    "id": 1,
+    "nombre": "Camisa Blanca (S)",
+    "nombreBase": "Camisa Blanca",
+    "talla": "S",
+    "categoria": "ropa",
+    "cantidad": 20,
+    "costoUnitario": 400,
+    "precioVenta": 600,
+    "proveedor": "Proveedor A",
+    "stockMinimo": 5,
+    "fecha": "2026-04-01",
+    "vendidos": 0
+  },
+  {
+    "id": 2,
+    "nombre": "Camisa Blanca (M)",
+    "nombreBase": "Camisa Blanca",
+    "talla": "M",
+    "categoria": "ropa",
+    "cantidad": 30,
+    "costoUnitario": 400,
+    "precioVenta": 600,
+    "proveedor": "Proveedor A",
+    "stockMinimo": 5,
+    "fecha": "2026-04-01",
+    "vendidos": 0
+  },
+  {
+    "id": 3,
+    "nombre": "Camisa Blanca (L)",
+    "nombreBase": "Camisa Blanca",
+    "talla": "L",
+    "categoria": "ropa",
+    "cantidad": 15,
+    "costoUnitario": 400,
+    "precioVenta": 600,
+    "proveedor": "Proveedor A",
+    "stockMinimo": 5,
+    "fecha": "2026-04-01",
+    "vendidos": 0
+  },
+  {
+    "id": 4,
+    "nombre": "Zapatos Negros",
+    "nombreBase": "Zapatos Negros",
+    "talla": "",
+    "categoria": "calzado",
+    "cantidad": 10,
+    "costoUnitario": 800,
+    "precioVenta": 1200,
+    "proveedor": "Zapatería",
+    "stockMinimo": 3,
+    "fecha": "2026-04-05",
+    "vendidos": 0
+  },
+  {
+    "id": 5,
+    "nombre": "Bolso Cuero",
+    "nombreBase": "Bolso Cuero",
+    "talla": "",
+    "categoria": "accesorios",
+    "cantidad": 8,
+    "costoUnitario": 1200,
+    "precioVenta": 2000,
+    "proveedor": "Accesorios SA",
+    "stockMinimo": 2,
+    "fecha": "2026-04-08",
+    "vendidos": 0
+  }
+]

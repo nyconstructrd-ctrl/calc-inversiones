@@ -1,16 +1,49 @@
 {
-  "name": "Calc Inversiones",
-  "short_name": "CalcInv",
-  "description": "Gestión financiera para negocio de reventa de ropa",
+  "name": "Rd-investments - Gestión de Inventario",
+  "short_name": "RdInv",
+  "description": "Aplicación financiera para gestión de compras y ventas de ropa",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#4CAF50",
   "theme_color": "#4CAF50",
+  "categories": ["business", "finance", "productivity"],
+  "lang": "es-DO",
   "icons": [
     {
-      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💰</text></svg>",
-      "sizes": "any",
-      "type": "image/svg+xml"
+      "src": "icon/image_712c5b05.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon/image_712c5b05.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon/image_712c5b05.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Nueva Compra",
+      "short_name": "Compra",
+      "description": "Registrar nueva compra",
+      "url": "/#shopping",
+      "icons": [{ "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛒</text></svg>", "sizes": "96x96" }]
+    },
+    {
+      "name": "Nueva Venta",
+      "short_name": "Venta",
+      "description": "Registrar nueva venta",
+      "url": "/#sales",
+      "icons": [{ "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💵</text></svg>", "sizes": "96x96" }]
     }
   ]
 }

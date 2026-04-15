@@ -46,19 +46,33 @@ h3 {
     right: 0;
     background: white;
     display: flex;
-    justify-content: space-around;
+    justify-content: flex-start;
     padding: 10px 5px;
     box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
     z-index: 999;
     max-width: 600px;
     margin: 0 auto;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+/* Ocultar menú inferior en pantalla de login */
+#login-screen.active ~ .bottom-nav,
+#app:has(#login-screen.active) .bottom-nav {
+    display: none;
+}
+
+.bottom-nav::-webkit-scrollbar {
+    display: none;
 }
 
 .nav-btn {
     background: none;
     border: none;
-    padding: 8px 12px;
-    font-size: 14px;
+    padding: 10px 14px;
+    font-size: 12px;
     color: #666;
     cursor: pointer;
     border-radius: 8px;
@@ -70,6 +84,20 @@ h3 {
     color: white;
 }
 
+#nav-home.active    { background: linear-gradient(135deg, #4CAF50, #45a049); color: white; }
+#nav-config.active  { background: linear-gradient(135deg, #2196F3, #1976D2); color: white; }
+#nav-shopping.active{ background: linear-gradient(135deg, #FF9800, #F57C00); color: white; }
+#nav-sales.active   { background: linear-gradient(135deg, #4CAF50, #388E3C); color: white; }
+#nav-inventario.active { background: linear-gradient(135deg, #795548, #5D4037); color: white; }
+#nav-history.active { background: linear-gradient(135deg, #9C27B0, #7B1FA2); color: white; }
+
+#nav-home:active    { background: linear-gradient(135deg, #4CAF50, #45a049); color: white; }
+#nav-config:active  { background: linear-gradient(135deg, #2196F3, #1976D2); color: white; }
+#nav-shopping:active{ background: linear-gradient(135deg, #FF9800, #F57C00); color: white; }
+#nav-sales:active   { background: linear-gradient(135deg, #4CAF50, #388E3C); color: white; }
+#nav-inventario:active { background: linear-gradient(135deg, #795548, #5D4037); color: white; }
+#nav-history:active { background: linear-gradient(135deg, #9C27B0, #7B1FA2); color: white; }
+
 /* PANTALLAS */
 .screen {
     display: none;
@@ -79,33 +107,47 @@ h3 {
     display: block;
 }
 
+/* Login screen usa flex para centrado */
+#login-screen.active {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
 /* DASHBOARD */
 .dashboard {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 6px;
 }
 
 .dash-card {
-    padding: 15px;
-    border-radius: 12px;
-    color: white;
+    padding: 8px 10px;
+    border-radius: 10px;
+    color: #333;
     text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 70px;
 }
 
 .dash-label {
-    font-size: 12px;
-    margin-bottom: 5px;
+    font-size: 11px;
+    margin-bottom: 4px;
     opacity: 0.9;
+    line-height: 1.2;
 }
 
 .dash-value {
-    font-size: 18px;
+    font-size: 16px;
     font-weight: bold;
+    line-height: 1.2;
 }
 
 .dash-card:last-child {
-    grid-column: span 2;
+    grid-column: span 1;
 }
 
 /* TARJETAS */
@@ -126,11 +168,11 @@ h3 {
 .input {
     width: 100%;
     padding: 12px;
-    border: 2px solid #ddd;
+    border: 2px solid #999;
     border-radius: 8px;
     font-size: 16px;
     margin-bottom: 10px;
-    background: white;
+    background: #e3f2fd;
 }
 
 .input:focus {
@@ -148,16 +190,17 @@ label {
 
 /* BOTONES */
 .btn-primary {
-    width: 100%;
-    padding: 15px;
+    width: auto;
+    display: inline-block;
+    padding: 10px 40px;
     background: linear-gradient(135deg, #4CAF50, #45a049);
     color: white;
     border: none;
-    border-radius: 10px;
-    font-size: 16px;
+    border-radius: 0;
+    font-size: 15px;
     font-weight: bold;
     cursor: pointer;
-    box-shadow: 0 4px 6px rgba(76, 175, 80, 0.3);
+    box-shadow: 0 2px 4px rgba(76, 175, 80, 0.3);
 }
 
 .btn-primary:active {
@@ -165,25 +208,27 @@ label {
 }
 
 .btn-secondary {
-    width: 100%;
-    padding: 12px;
-    background: #f5f5f5;
-    color: #333;
+    width: auto;
+    display: inline-block;
+    padding: 8px 35px;
+    background: linear-gradient(135deg, #607D8B, #455A64);
+    color: white;
     border: none;
-    border-radius: 10px;
+    border-radius: 0;
     font-size: 14px;
     cursor: pointer;
-    margin-top: 10px;
+    margin-top: 5px;
 }
 
 .btn-whatsapp {
-    width: 100%;
-    padding: 15px;
+    width: auto;
+    display: inline-block;
+    padding: 10px 40px;
     background: linear-gradient(135deg, #25D366, #128C7E);
     color: white;
     border: none;
-    border-radius: 10px;
-    font-size: 16px;
+    border-radius: 0;
+    font-size: 15px;
     font-weight: bold;
     cursor: pointer;
 }
@@ -287,4 +332,203 @@ label {
 ::-webkit-scrollbar-thumb {
     background: #ccc;
     border-radius: 3px;
+}
+
+/* MODAL INVENTARIO BATCH */
+#modal-inventario-batch {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.7);
+    z-index: 1000;
+    overflow-y: auto;
+}
+
+.modal-content {
+    background: white;
+    max-width: 600px;
+    margin: 20px auto;
+    border-radius: 12px;
+    padding: 20px;
+    position: relative;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #795548;
+    padding-bottom: 10px;
+}
+
+.modal-header h3 {
+    margin: 0;
+    color: #795548;
+}
+
+.modal-close-btn {
+    background: #f44336;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.modal-body {
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.producto-batch-item {
+    background: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 12px;
+}
+
+.producto-batch-item .nombre {
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 10px;
+    font-size: 16px;
+}
+
+.producto-batch-item .inputs-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+}
+
+.producto-batch-item .input-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.producto-batch-item .input-group label {
+    font-size: 11px;
+    color: #666;
+    margin-bottom: 3px;
+}
+
+.producto-batch-item .input-group input {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+    width: 100%;
+}
+
+.modal-footer {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 2px solid #eee;
+}
+
+.modal-btn {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.modal-btn-save {
+    background: linear-gradient(135deg, #4CAF50, #2E7D32);
+    color: white;
+}
+
+.modal-btn-cancel {
+    background: #f44336;
+    color: white;
+}
+
+/* ==================== MODO OSCURO ==================== */
+
+body.dark-mode {
+    background: #1a1a1a;
+    color: #eee;
+}
+
+body.dark-mode #app {
+    background: #1a1a1a;
+}
+
+body.dark-mode h1,
+body.dark-mode h2,
+body.dark-mode h3 {
+    color: #eee;
+}
+
+body.dark-mode .screen {
+    background: #1a1a1a;
+}
+
+body.dark-mode .card {
+    background: #2d2d2d;
+    border-color: #444;
+    color: #eee;
+}
+
+body.dark-mode .card h3 {
+    color: #fff;
+}
+
+body.dark-mode .card p {
+    color: #ccc;
+}
+
+body.dark-mode .input {
+    background: #333;
+    border-color: #555;
+    color: #fff;
+}
+
+body.dark-mode .bottom-nav {
+    background: #2d2d2d;
+    border-top: 1px solid #444;
+}
+
+body.dark-mode .nav-btn {
+    color: #aaa;
+}
+
+body.dark-mode .nav-btn.active {
+    color: #4CAF50;
+    background: rgba(76, 175, 80, 0.2);
+}
+
+body.dark-mode .dash-label {
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+
+body.dark-mode .dash-value {
+    color: #fff !important;
+}
+
+body.dark-mode #dash-resumen-moneda {
+    background: #333;
+    border-color: #555;
+    color: #fff;
+}
+
+body.dark-mode .btn-secondary {
+    background: #444;
+    color: #fff;
+    border-color: #555;
+}
+
+body.dark-mode #compra-moneda-general {
+    background: #333;
+    color: #fff;
 }

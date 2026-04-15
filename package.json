@@ -1,5 +1,14 @@
 {
   "name": "calc-inversiones-pwa",
   "version": "1.0.0",
-  "private": true
+  "private": true,
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "build": "echo no-build-needed",
+    "dev": "node server.js"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
 }

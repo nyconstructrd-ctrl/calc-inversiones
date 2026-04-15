@@ -6,75 +6,166 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Calc Inversiones">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <title>Calc Inversiones - Gestión de Ropa</title>
+    <meta name="apple-mobile-web-app-title" content="Chic Divine">
+    <meta name="theme-color" content="#4CAF50">
+    <title>Chic Divine - Clothing Business</title>
+    
+    <!-- Iconos PWA para iPhone y Android -->
     <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon/image_712c5b05.png">
+    <link rel="icon" type="image/png" href="icon/image_712c5b05.png">
     <link rel="stylesheet" href="styles.css">
-    <script>
-        function showScreen(screenId) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById(screenId).classList.add('active');
-        }
-
-        function formatCurrency(num) {
-            return 'RD$ ' + parseFloat(num || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-        }
-
-        function formatDate(dateStr) {
-            if (!dateStr) return '';
-            const d = new Date(dateStr);
-            return d.toLocaleDateString('es-DO');
-        }
-    </script>
+    <!-- Librerías de la aplicación -->
+    <script src="js/globals.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/inventory.js"></script>
+    <script src="js/shopping.js"></script>
+    <script src="js/sales.js"></script>
+    <script src="js/receipt.js"></script>
+    <script src="js/reports.js"></script>
+    <script src="js/expenses.js"></script>
+    <script src="js/modals.js"></script>
+    <script src="js/init.js"></script>
+    <script src="js/charts.js"></script>
+    <script src="js/chart.min.js"></script>
 </head>
 <body>
     <div id="app">
-        <nav class="bottom-nav">
-            <button onclick="showHome()" class="nav-btn active" id="nav-home">🏠 Inicio</button>
-            <button onclick="showConfig()" class="nav-btn" id="nav-config">⚙️</button>
-            <button onclick="showShopping()" class="nav-btn" id="nav-shopping">🛒 Compras</button>
-            <button onclick="showSales()" class="nav-btn" id="nav-sales">💵 Ventas</button>
-            <button onclick="showHistory()" class="nav-btn" id="nav-history">📊</button>
+        <nav class="bottom-nav" style="font-size: 10px;">
+            <button onclick="showHome()" class="nav-btn active" id="nav-home" style="font-size: 16px;">🏠 Inicio</button>
+            <button onclick="showShopping()" class="nav-btn" id="nav-shopping" style="font-size: 16px;">🛒 Compras +</button>
+            <button onclick="showSales()" class="nav-btn" id="nav-sales" style="font-size: 16px;">💵 Ventas +</button>
+            <button onclick="showHistory()" class="nav-btn" id="nav-history" style="font-size: 16px;">📊 Reportes</button>
+            <button onclick="showConfig()" class="nav-btn" id="nav-config" style="font-size: 16px;">⚙️ Config</button>
+            <button onclick="showHelp()" class="nav-btn" id="nav-help" style="font-size: 16px;">❓ Ayuda</button>
         </nav>
 
-        <!-- PANTALLA HOME / DASHBOARD -->
-        <div id="home-screen" class="screen active">
-            <h1>💰 Calc Inversiones</h1>
+        <!-- PANTALLA LOGIN -->
+        <div id="login-screen" class="screen active" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; flex-direction: column; justify-content: center; align-items: center; padding: 20px;">
+            <div style="background: white; border-radius: 20px; padding: 40px 30px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); max-width: 350px; width: 100%; text-align: center; display: flex; flex-direction: column; justify-content: center; min-height: 60vh;">
+                <h1 style="color: #333; margin: 0 0 10px 0; font-size: 28px;">🛒 Chic Divine</h1>
+                <p style="color: #666; margin: 0 0 30px 0; font-size: 14px;">Ingrese su contraseña para continuar</p>
+                
+                <div style="margin-bottom: 20px;">
+                    <input type="password" id="login-password" class="input" placeholder="Contraseña" style="width: 100%; padding: 15px; font-size: 18px; text-align: center; border: 2px solid #ddd; border-radius: 10px;">
+                </div>
+                
+                <button onclick="verificarPassword()" class="btn-primary" style="width: 100%; padding: 15px; font-size: 16px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; border-radius: 10px; color: white; cursor: pointer; font-weight: bold;">
+                    🔓 Entrar
+                </button>
+                
+                <p id="login-error" style="color: #f44336; font-size: 13px; margin: 15px 0 0 0; display: none;">Contraseña incorrecta</p>
+                
+            </div>
+        </div>
+
+        <div id="home-screen" class="screen">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h1 style="margin: 0;">💲 Dashboard</h1>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <button id="btn-dark-mode" onclick="toggleDarkMode()" style="background: #333; color: #fff; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 14px;">🌙</button>
+                    <select id="dash-resumen-moneda" class="input" style="width: auto; height: 32px; padding: 0 10px; font-size: 12px; background: white; border: 1px solid #ddd; border-radius: 8px; cursor: pointer; font-weight: bold; color: #333;" onchange="updateDashboard()">
+                        <option value="USD" selected>🇺🇸 USD</option>
+                        <option value="RD$">🇩🇴 RD$</option>
+                    </select>
+                </div>
+            </div>
             
             <div class="dashboard">
                 <div class="dash-card" style="background: linear-gradient(135deg, #4CAF50, #45a049);">
-                    <p class="dash-label">Venta del Mes</p>
+                    <p class="dash-label" style="font-size:11px;">Venta del Mes</p>
                     <p class="dash-value" id="dash-ventas">RD$ 0.00</p>
                 </div>
                 
                 <div class="dash-card" style="background: linear-gradient(135deg, #2196F3, #1976D2);">
-                    <p class="dash-label">Inversión del Mes</p>
+                    <p class="dash-label" style="font-size:11px;">Inversión Total</p>
                     <p class="dash-value" id="dash-inversion">RD$ 0.00</p>
                 </div>
                 
                 <div class="dash-card" style="background: linear-gradient(135deg, #FF9800, #F57C00);">
-                    <p class="dash-label">Diezmo (10%)</p>
-                    <p class="dash-value" id="dash-diezmo">RD$ 0.00</p>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <p class="dash-label" id="dash-diezmo-label" style="font-size:11px; cursor: pointer;" onclick="mostrarHistorialDiezmo()">Diezmo (10%) 📊</p>
+                        <span style="font-size:14px; cursor: pointer;" onclick="showDiezmo()">⚙️</span>
+                    </div>
+                    <p class="dash-value" id="dash-diezmo" style="cursor: pointer;" onclick="mostrarHistorialDiezmo()">RD$ 0.00</p>
                 </div>
                 
                 <div class="dash-card" style="background: linear-gradient(135deg, #9C27B0, #7B1FA2);">
-                    <p class="dash-label">Resto por Vender</p>
+                    <p class="dash-label" style="font-size:11px;">Resto por Vender</p>
                     <p class="dash-value" id="dash-resto">RD$ 0.00</p>
                 </div>
                 
                 <div class="dash-card" style="background: linear-gradient(135deg, #f44336, #D32F2F);">
-                    <p class="dash-label">Utilidad Neta</p>
+                    <p class="dash-label" style="font-size:11px;">Ganancia Neta</p>
                     <p class="dash-value" id="dash-utilidad">RD$ 0.00</p>
+                </div>
+
+                <div class="dash-card" style="background: linear-gradient(135deg, #4CAF50, #388E3C);">
+                    <p class="dash-label" style="font-size:11px;">Ganancia Bruta</p>
+                    <p class="dash-value" id="dash-ganancia-bruta">RD$ 0.00</p>
+                </div>
+
+                <div class="dash-card" style="background: linear-gradient(135deg, #00BCD4, #0097A7); cursor: pointer;" onclick="showDolar()">
+                    <p class="dash-label" style="font-size:11px;">💵 Tasa Dólar</p>
+                    <p class="dash-value" id="dash-tasa">RD$ 0</p>
+                </div>
+
+                <div class="dash-card" style="background: linear-gradient(135deg, #607D8B, #455A64); color: white; cursor: pointer;" onclick="showGastos()">
+                    <p class="dash-label" id="dash-gastos-label" style="font-size:11px;">💸 Gastos</p>
+                    <p class="dash-value" id="dash-gastos">RD$ 0.00</p>
+                </div>
+
+                <div class="dash-card" style="background: linear-gradient(135deg, #795548, #5D4037); color: white; cursor: pointer;" onclick="showInventario()">
+                    <p class="dash-label" style="font-size:11px;">📦 Inventario</p>
+                    <p class="dash-value" id="dash-inventario-articulos">0 artículos</p>
                 </div>
             </div>
 
-            <button onclick="showShopping()" class="btn-primary" style="margin-top: 15px;">➕ Registrar Compra</button>
-            <button onclick="showSales()" class="btn-primary" style="margin-top: 10px;">💵 Registrar Venta</button>
+            <!-- Botón de Consolidación -->
+            <div style="margin: 20px 0; text-align: center;">
+                <button id="btn-consolidar-caja" onclick="consolidarTotales()" style="background: linear-gradient(135deg, #2c3e50, #000000); color: white; border: 2px solid rgba(255,255,255,0.1); padding: 15px; border-radius: 12px; font-size: 14px; font-weight: bold; cursor: pointer; display: none; width: 100%; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+                    🧹 Cerrar Periodo / Resetear Inicio
+                </button>
+                <p style="font-size: 11px; color: #666; margin-top: 8px;">Esto limpia el contador del inicio para un nuevo ciclo, manteniendo los datos en Reportes.</p>
+            </div>
 
-            <div class="card" style="margin-top: 20px;">
-                <h3>📦 Últimas Compras</h3>
-                <div id="home-compras"></div>
+
+        </div>
+
+        <!-- PANTALLA DISEÑO FACTURA -->
+        <div id="diseno-factura-screen" class="screen">
+            <h2>🎨 Diseño de Factura</h2>
+            <button onclick="showConfig()" class="btn-secondary" style="background: linear-gradient(135deg, #9C27B0, #7B1FA2); color: white; margin-bottom: 15px;">← Volver</button>
+
+            <div class="card">
+                <label>📝 Texto de Encabezado (debajo del nombre)</label>
+                <textarea id="df-encabezado" class="input" rows="2" placeholder="Ej: Boutique de Ropa Femenina | RNC: 000-000-000" oninput="updatePreviewFactura()"></textarea>
+            </div>
+
+            <div class="card">
+                <label>📄 Pie de Factura (mensaje final)</label>
+                <textarea id="df-pie" class="input" rows="3" placeholder="Ej: ¡Gracias por su compra! Cambios en 7 días con etiqueta." oninput="updatePreviewFactura()"></textarea>
+            </div>
+
+            <div class="card" style="display: flex; align-items: center; gap: 15px;">
+                <label style="flex:1;">🎨 Color Principal de la Factura</label>
+                <input type="color" id="df-color" value="#4CAF50" style="width: 50px; height: 40px; border: none; border-radius: 8px; cursor: pointer;" onchange="updatePreviewFactura()">
+            </div>
+
+            <!-- VISTA PREVIA DE FACTURA -->
+            <div class="card" style="background: #f5f5f5; padding: 15px;">
+                <label style="font-weight: bold; color: #333; margin-bottom: 10px; display: block;">👁️ Vista Previa:</label>
+                <div id="preview-factura" style="background: white; border: 2px dashed #ccc; border-radius: 8px; padding: 20px; font-family: 'Courier New', monospace; max-width: 400px; margin: 0 auto;">
+                    <!-- Preview content will be generated by JS -->
+                </div>
+            </div>
+
+            <div class="card" style="background: linear-gradient(135deg, #E8F5E9, #C8E6C9); text-align: center; padding: 20px;">
+                <p style="font-size: 12px; color: #555; margin-bottom: 10px;">💡 El encabezado y el pie se mostrarán en todas las facturas que envíes por WhatsApp.</p>
+                <button onclick="saveDisenoFactura()" style="background: linear-gradient(135deg, #4CAF50, #388E3C); color: white; border: none; padding: 15px 30px; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; width: 100%;">
+                    💾 Guardar Diseño
+                </button>
             </div>
         </div>
 
@@ -82,64 +173,379 @@
         <div id="config-screen" class="screen">
             <h2>⚙️ Datos del Comercio</h2>
             
-            <div class="card">
-                <label>💵 Costo por Libra (USD)</label>
-                <input type="number" id="config-costo-libra" class="input" placeholder="Ej: 5">
+            <div style="display: flex; gap: 10px; margin-bottom: 10px; align-items: center;">
+                <button onclick="showHome()" class="btn-secondary" style="background: linear-gradient(135deg, #607D8B, #455A64); color: white; width: 80px; padding: 8px 15px; font-size: 13px;">← Volver</button>
+                <div style="flex: 1;"></div>
+                <button onclick="showDisenoFactura()" style="background: linear-gradient(135deg, #9C27B0, #7B1FA2); color: white; border: none; border-radius: 8px; width: 120px; height: 40px; cursor: pointer; font-size: 13px; font-weight: bold; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">🎨 Diseño</button>
             </div>
             
             <div class="card">
-                <label>🔄 Tasa de Cambio (1 USD = ?)</label>
-                <input type="number" id="config-tasa" class="input" placeholder="Ej: 3500">
-            </div>
-            
-            <div class="card">
-                <label>📢 Publicidad Mensual</label>
-                <input type="number" id="config-publicidad" class="input" placeholder="Ej: 50000">
-            </div>
-            
-            <div class="card">
-                <label>🙏 Diezmo (10%)</label>
-                <p style="color: #666; font-size: 14px;">Se calcula automáticamente de la utilidad bruta</p>
+                <label>🏪 Nombre del Comercio</label>
+                <input type="text" id="config-nombre" class="input" placeholder="Ej: Boutique Mía">
             </div>
 
-            <button onclick="saveConfig()" class="btn-primary">💾 Guardar Configuración</button>
-            <button onclick="showHome()" class="btn-secondary">← Volver</button>
+            <div class="card">
+                <label>📞 Teléfono</label>
+                <input type="tel" id="config-telefono" class="input" placeholder="Ej: 809-000-0000">
+            </div>
+
+            <div class="card">
+                <label>✨ Slogan</label>
+                <input type="text" id="config-slogan" class="input" placeholder="Ej: Tu estilo, nuestra pasión">
+            </div>
+
+            <div class="card">
+                <label>🌐 Redes Sociales</label>
+                <input type="text" id="config-redes" class="input" placeholder="Ej: @boutiquemia">
+            </div>
+
+            <div class="card" style="background: linear-gradient(135deg, #E3F2FD, #BBDEFB);">
+                <label>📧 Correo para Respaldo</label>
+                <input type="email" id="config-email" class="input" placeholder="Ej: tuemail@gmail.com">
+                <p style="color: #1976D2; font-size: 12px; margin-top: 5px;">Se enviará copia de seguridad a este correo</p>
+            </div>
+
+            <button onclick="saveConfig()" class="btn-primary" style="background: linear-gradient(135deg, #2196F3, #1976D2);">💾 Guardar Configuración</button>
+
+            <div class="card" style="background: linear-gradient(135deg, #E1F5FE, #B3E5FC); margin-top: 20px;">
+                <h3 style="color: #01579B; margin: 0 0 10px 0;">🔒 Seguridad</h3>
+                <p style="color: #333; font-size: 14px; margin: 0 0 10px 0;">
+                    Cambia la contraseña de acceso a la aplicación.
+                </p>
+                <button onclick="showPassword()" class="btn-primary" style="background: linear-gradient(135deg, #FF9800, #F57C00); width: 100%;">
+                    🔑 Cambiar Contraseña
+                </button>
+            </div>
+
+            <div class="card" style="background: linear-gradient(135deg, #673AB7, #512DA8); margin-top: 20px;">
+                <h3 style="color: white; margin: 0;">💾 Respaldo de Seguridad</h3>
+                <p style="color: rgba(255,255,255,0.9); font-size: 12px; margin: 10px 0;">
+                    Guarda tu backup en un lugar seguro. Si se pierde el celular, tendrás tus datos.
+                </p>
+                <div style="display: flex; gap: 8px; flex-direction: column;">
+                    <button onclick="descargarBackup()" class="btn-primary" style="background: white; color: #673AB7; width: 100%;">
+                        📥 Descargar Backup
+                    </button>
+                    <button onclick="enviarBackupWhatsApp()" class="btn-primary" style="background: #25D366; color: white; width: 100%;">
+                        📱 Enviar por WhatsApp
+                    </button>
+                </div>
+                <p style="color: rgba(255,255,255,0.7); font-size: 10px; margin-top: 8px;">
+                    💡 Tip: Envíalo a tu número personal o a un familiar para tener copia en otro celular
+                </p>
+            </div>
+
+            <div style="display: flex; gap: 6px; justify-content: center; margin-top: 15px;">
+                <button onclick="exportData()" class="btn-secondary" style="flex:0 1 auto; background: #FF9800; color: white; font-size: 14px; padding: 8px 30px;">💾 Exportar Datos</button>
+                <button onclick="document.getElementById('import-file').click()" class="btn-secondary" style="flex:0 1 auto; background: #607D8B; color: white; font-size: 14px; padding: 8px 30px;">📥 Importar Datos</button>
+            </div>
+            <input type="file" id="import-file" accept=".json" style="display: none;" onchange="importData(event)">
+            
+            <button onclick="logoutUser()" class="btn-secondary" style="background: linear-gradient(135deg, #f44336, #d32f2f); color: white; margin-top: 15px; width: 100%;">
+                🚪 Cerrar Sesión
+            </button>
+
+            <div class="card" style="background: linear-gradient(135deg, #1a1a1a, #2d0000); margin-top: 30px; border: 2px solid #f44336; position: relative; overflow: hidden;">
+                <div style="position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, #f44336, #ff9800, #f44336);"></div>
+                <h3 style="color: #f44336; margin: 10px 0 10px 0;">⚠️ Zona de Peligro</h3>
+                <p style="color: rgba(255,255,255,0.7); font-size: 13px; margin: 0 0 15px 0; line-height: 1.5;">
+                    Resetear la aplicación borrará <strong style="color: #ff5252;">TODOS</strong> los datos: inventario, ventas, compras, gastos y reportes. La contraseña se mantiene.
+                </p>
+                <button onclick="resetAllData()" style="background: linear-gradient(135deg, #b71c1c, #d32f2f); color: white; border: 2px solid #f44336; padding: 14px; border-radius: 10px; font-size: 15px; font-weight: bold; cursor: pointer; width: 100%; box-shadow: 0 4px 15px rgba(244,67,54,0.3); transition: all 0.3s;">
+                    🗑️ Resetear Todo / Empezar de Cero
+                </button>
+                <p style="color: rgba(255,255,255,0.4); font-size: 10px; margin: 10px 0 0 0; text-align: center;">
+                    💡 Requiere doble confirmación + escribir BORRAR
+                </p>
+            </div>
+        </div>
+
+        <!-- PANTALLA DISEÑO DE FACTURA -->
+        <div id="disenofactura-screen" class="screen">
+            <h2>🎨 Diseño de Factura</h2>
+            
+            <button onclick="showConfig()" class="btn-secondary" style="background: linear-gradient(135deg, #607D8B, #455A64); color: white; margin-bottom: 10px;">← Volver a Configuración</button>
+            
+            <div class="card">
+                <h3 style="margin: 0 0 15px 0;">🏪 Encabezado de Factura</h3>
+                <textarea id="factura-encabezado" class="input" placeholder="Ej: Tu Comercio&#10;Dirección: Calle Principal #123&#10;Tel: 809-000-0000" rows="4" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:14px;resize:vertical;font-family:inherit;"></textarea>
+                <p style="color: #666; font-size: 12px; margin-top: 5px;">Texto que aparecerá en la parte superior de la factura</p>
+            </div>
+
+            <div class="card">
+                <h3 style="margin: 0 0 15px 0;">📝 Pie de Factura</h3>
+                <textarea id="factura-pie" class="input" placeholder="Ej: ¡Gracias por su compra!&#10;Dios le bendiga&#10;Vuelva pronto" rows="3" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:14px;resize:vertical;font-family:inherit;"></textarea>
+                <p style="color: #666; font-size: 12px; margin-top: 5px;">Mensaje que aparecerá al final de la factura</p>
+            </div>
+
+            <div class="card">
+                <h3 style="margin: 0 0 15px 0;">🖼️ Vista Previa</h3>
+                <div id="factura-preview" style="background: white; border: 2px dashed #ddd; border-radius: 8px; padding: 20px; text-align: center; font-family: monospace;">
+                    <div style="color: #999;">Vista previa aparecerá aquí</div>
+                </div>
+            </div>
+
+            <button onclick="guardarDisenoFactura()" class="btn-primary" style="background: linear-gradient(135deg, #9C27B0, #7B1FA2); width: 100%; margin-top: 10px;">💾 Guardar Diseño</button>
+        </div>
+
+        <!-- PANTALLA AYUDA -->
+        <div id="help-screen" class="screen">
+            <h2>❓ Ayuda y Tutorial</h2>
+            
+            <button onclick="showConfig()" class="btn-secondary" style="background: linear-gradient(135deg, #607D8B, #455A64); color: white; margin-bottom: 10px;">← Volver a Configuración</button>
+            
+            <div class="card" style="background: linear-gradient(135deg, #E8F5E9, #C8E6C9);">
+                <h3 style="color: #2E7D32; margin: 0 0 10px 0;">🚀 Primeros Pasos</h3>
+                <ol style="margin: 0; padding-left: 20px; color: #333; font-size: 14px; line-height: 1.6;">
+                    <li><strong>Inicia sesión:</strong> Ingresa tu contraseña para acceder al sistema.</li>
+                    <li><strong>Configura tu comercio:</strong> Ve a ⚙️ Config y pon el nombre, teléfono y slogan.</li>
+                    <li><strong>Establece la tasa:</strong> En Config > 💵 Precio del Dólar, pon la tasa actual.</li>
+                    <li><strong>Configura el diezmo:</strong> En Config > 🙏 Diezmo, ajusta el porcentaje (default 10%).</li>
+                </ol>
+            </div>
+
+            <div class="card" style="background: linear-gradient(135deg, #F3E5F5, #E1BEE7);">
+                <h3 style="color: #7B1FA2; margin: 0 0 10px 0;">🔒 Seguridad y Contraseña</h3>
+                <ul style="margin: 0; padding-left: 20px; color: #333; font-size: 14px; line-height: 1.6;">
+                    <li><strong>Inicio de sesión:</strong> La app requiere contraseña para proteger tus datos.</li>
+                    <li><strong>Contraseña inicial:</strong> Usa <strong>1234</strong> la primera vez.</li>
+                    <li><strong>Cambiar contraseña:</strong> Ve a ⚙️ Config > 🔒 Cambiar Contraseña.</li>
+                    <li><strong>Cierre automático:</strong> La sesión se cierra después de 1 hora de inactividad.</li>
+                    <li><strong>Datos locales:</strong> La contraseña se guarda solo en este dispositivo.</li>
+                </ul>
+            </div>
+
+            <div class="card" style="background: linear-gradient(135deg, #E3F2FD, #BBDEFB);">
+                <h3 style="color: #1565C0; margin: 0 0 10px 0;">🛒 Cómo Registrar una Compra</h3>
+                <ol style="margin: 0; padding-left: 20px; color: #333; font-size: 14px; line-height: 1.6;">
+                    <li>Ve a <strong>🛒 Compras</strong> y completa los campos del proveedor.</li>
+                    <li>En <strong>Detalles</strong>, escribe cada artículo con su precio de venta (ej: "Vestido rojo - 500").</li>
+                    <li>El <strong>Precio de Venta</strong> se suma automáticamente.</li>
+                    <li>Ingresa el <strong>Costo</strong> (lo que te costó la mercancía).</li>
+                    <li>Ingresa el <strong>Costo de Envío</strong> en RD$.</li>
+                    <li>Presiona <strong>Guardar Compra</strong>.</li>
+                </ol>
+                <p style="color: #666; font-size: 12px; margin-top: 10px; margin-bottom: 0;">
+                    💡 <strong>Tip:</strong> El Total Inversión = Costo + Envío + Otros Gastos
+                </p>
+            </div>
+
+            <div class="card" style="background: linear-gradient(135deg, #FFF3E0, #FFE0B2);">
+                <h3 style="color: #E65100; margin: 0 0 10px 0;">💵 Cómo Registrar una Venta</h3>
+                <ol style="margin: 0; padding-left: 20px; color: #333; font-size: 14px; line-height: 1.6;">
+                    <li>Ve a <strong>💵 Ventas</strong>.</li>
+                    <li>Escribe el nombre del cliente y su teléfono.</li>
+                    <li>Busca artículos del inventario o escríbelos manualmente.</li>
+                    <li>Agrega el <strong>Costo de Envío</strong> si aplica.</li>
+                    <li>Presiona <strong>Registrar Factura</strong>.</li>
+                </ol>
+                <p style="color: #666; font-size: 12px; margin-top: 10px; margin-bottom: 0;">
+                    💡 El diezmo se calcula automáticamente de la ganancia.
+                </p>
+            </div>
+
+            <div class="card" style="background: linear-gradient(135deg, #E0F2F1, #B2DFDB);">
+                <h3 style="color: #00695C; margin: 0 0 10px 0;">📊 Dashboard y Reportes</h3>
+                <ul style="margin: 0; padding-left: 20px; color: #333; font-size: 14px; line-height: 1.6;">
+                    <li><strong>Ventas:</strong> Total vendido del mes.</li>
+                    <li><strong>Inversión:</strong> Total gastado en compras.</li>
+                    <li><strong>Diezmo:</strong> Calculado según tu configuración.</li>
+                    <li><strong>Utilidad Neta:</strong> Ganancia real después de gastos y diezmo.</li>
+                </ul>
+                <p style="color: #00695C; font-size: 12px; margin-top: 10px; margin-bottom: 0; font-weight: bold;">
+                    ✨ Todas las tablas suman automáticamente los totales.
+                </p>
+            </div>
+
+            <div class="card" style="background: linear-gradient(135deg, #FCE4EC, #F8BBD9);">
+                <h3 style="color: #C2185B; margin: 0 0 10px 0;">💾 Respaldos (Muy Importante)</h3>
+                <p style="color: #333; font-size: 14px; line-height: 1.6; margin: 0;">
+                    En <strong>Config > Respaldo</strong> puedes:
+                </p>
+                <ul style="margin: 10px 0; padding-left: 20px; color: #333; font-size: 14px; line-height: 1.6;">
+                    <li><strong>📥 Descargar Backup:</strong> Guarda archivo JSON en tu celular.</li>
+                    <li><strong>📱 Enviar por WhatsApp:</strong> Envía a tu número personal o familiar.</li>
+                    <li><strong>💾 Exportar/Importar:</strong> Transfiere datos entre dispositivos.</li>
+                    <li><strong>📧 Email:</strong> Configura correo para respaldos automáticos.</li>
+                </ul>
+                <p style="color: #C2185B; font-size: 13px; margin-top: 10px; margin-bottom: 0; font-weight: bold;">
+                    ⚠️ Haz respaldo semanalmente. Si se daña el celular, perderás todo.
+                </p>
+            </div>
+
+            <div class="card" style="background: linear-gradient(135deg, #FFF8E1, #FFECB3);">
+                <h3 style="color: #F57F17; margin: 0 0 10px 0;">📦 Gestión de Inventario</h3>
+                <p style="color: #333; font-size: 14px; line-height: 1.6; margin: 0 0 10px 0;">
+                    Control completo de tus productos con control de stock:
+                </p>
+                <ul style="margin: 0; padding-left: 20px; color: #333; font-size: 14px; line-height: 1.6;">
+                    <li><strong>Agregar productos:</strong> Nombre, categoría, cantidad, costo, precio de venta, talla/variante, proveedor.</li>
+                    <li><strong>📈 Calculadora de margen:</strong> Selecciona margen (30%-100%) y calcula precio automáticamente. Se recuerda tu último margen usado.</li>
+                    <li><strong>📏 Tallas/Variantes:</strong> Campo opcional para especificar talla, color o variante del producto.</li>
+                    <li><strong>🎴 Vista Tarjetas:</strong> Vista visual con fotos y colores según stock.</li>
+                    <li><strong>📊 Vista Tabla:</strong> Lista compacta con costos, precios, márgenes y valor total de inventario. Cambia con los botones arriba de la lista.</li>
+                    <li><strong>🔍 Búsqueda:</strong> Filtra por nombre o proveedor.</li>
+                    <li><strong>⚠️ Alerta stock bajo:</strong> Productos con ≤5 unidades se marcan en rojo.</li>
+                </ul>
+                <p style="color: #666; font-size: 12px; margin-top: 10px; margin-bottom: 0;">
+                    💡 <strong>Tip:</strong> El Valor de Inventario = Cantidad × Costo unitario
+                </p>
+            </div>
+
+            <div class="card" style="background: linear-gradient(135deg, #FCE4EC, #F8BBD9);">
+                <h3 style="color: #C2185B; margin: 0 0 10px 0;">📱 Instagram / Redes Sociales</h3>
+                <p style="color: #333; font-size: 14px; line-height: 1.6; margin: 0 0 10px 0;">
+                    Botón <strong>"@ Redes"</strong> en inventario. Funcionalidades:
+                </p>
+                <ul style="margin: 0; padding-left: 20px; color: #333; font-size: 14px; line-height: 1.6;">
+                    <li><strong>📋 Copiar texto:</strong> Genera texto formateado con nombre, precio y talla para pegar en Instagram.</li>
+                    <li><strong>📱 Link WhatsApp:</strong> Crea link directo para que clientes te escriban con el producto pre-seleccionado.</li>
+                    <li><strong>💰 Mensajes rápidos:</strong> Botones con respuestas listas: Precio, Tallas, Envío, Pago, Confirmar pedido.</li>
+                    <li><strong>🖼️ Crear imagen:</strong> Sube tu foto y genera imagen promocional con 4 estilos:
+                        <ul style="margin: 5px 0; padding-left: 15px; font-size: 12px;">
+                            <li>🌸 Rosa Instagram - Fondo degradado rosa</li>
+                            <li>🖤 Oscuro Elegante - Fondo negro degradado</li>
+                            <li>☕ Café Clásico - Fondo marrón</li>
+                            <li>📷 Solo foto - Sin fondo colorido, tu foto principal</li>
+                        </ul>
+                    </li>
+                </ul>
+                <p style="color: #666; font-size: 12px; margin-top: 10px; margin-bottom: 0;">
+                    💡 <strong>Tip:</strong> Puedes cambiar el estilo después de subir la foto y se regenera automáticamente
+                </p>
+            </div>
+
+            <div class="card" style="background: linear-gradient(135deg, #E8EAF6, #C5CAE9);">
+                <h3 style="color: #303F9F; margin: 0 0 10px 0;">📦 Agregar al Inventario desde Compras</h3>
+                <ol style="margin: 0; padding-left: 20px; color: #333; font-size: 14px; line-height: 1.6;">
+                    <li>En <strong>🛒 Compras</strong>, escribe los productos en "Detalles" (ej: "Camisa blanca - 500").</li>
+                    <li>Haz clic en <strong>"📦 Agregar al Inventario"</strong>.</li>
+                    <li>Aparece modal con todos los productos detectados.</li>
+                    <li>Para cada producto completa:
+                        <ul style="margin: 5px 0; padding-left: 15px; font-size: 12px;">
+                            <li><strong>Tallas:</strong> Escribe S:20,M:30,L:25 para crear múltiples productos con tallas</li>
+                            <li><strong>Cantidad:</strong> Se calcula automático de las tallas, o escribe manual</li>
+                            <li><strong>Costo:</strong> Precio que te costó el producto</li>
+                            <li><strong>Precio Venta:</strong> Se calcula automático con margen o escribe manual</li>
+                        </ul>
+                    </li>
+                    <li>Guarda y se agregan todos al inventario.</li>
+                </ol>
+                <p style="color: #666; font-size: 12px; margin-top: 10px; margin-bottom: 0;">
+                    💡 <strong>Tip:</strong> El sistema detecta automáticamente la moneda seleccionada en compras
+                </p>
+            </div>
+
+            <div class="card" style="background: linear-gradient(135deg, #E1F5FE, #B3E5FC);">
+                <h3 style="color: #01579B; margin: 0 0 10px 0;">🎨 Diseñador de Factura</h3>
+                <p style="color: #333; font-size: 14px; line-height: 1.6; margin: 0 0 10px 0;">
+                    En <strong>⚙️ Config > 🎨 Diseñar Factura</strong> personalizas:
+                </p>
+                <ul style="margin: 0; padding-left: 20px; color: #333; font-size: 14px; line-height: 1.6;">
+                    <li><strong>Color principal:</strong> Elige el color de tu marca.</li>
+                    <li><strong>Texto encabezado:</strong> Mensaje arriba de la factura.</li>
+                    <li><strong>Texto pie:</strong> Mensaje final (despedida, políticas, etc.).</li>
+                    <li><strong>Vista previa:</strong> Ve cómo quedará antes de guardar.</li>
+                </ul>
+            </div>
+
+            <div class="card" style="background: linear-gradient(135deg, #ECEFF1, #CFD8DC);">
+                <h3 style="color: #455A64; margin: 0 0 10px 0;">❓ ¿Problemas?</h3>
+                <p style="color: #333; font-size: 14px; line-height: 1.6; margin: 0;">
+                    Si tienes algún problema o sugerencia, contacta al desarrollador.
+                </p>
+                <p style="color: #666; font-size: 12px; margin-top: 10px; margin-bottom: 0;">
+                    <strong>NY Construct United States</strong><br>
+                    © 2026 - Todos los derechos reservados<br>
+                    Licencia: © 2026 Versión: 1.0.0<br>
+                    WhatsApp: +1 (347) 323-9086<br>
+                    Email: nyconstructrd@gmail.com<br>
+                </p>
+            </div>
         </div>
 
         <!-- PANTALLA COMPRAS -->
         <div id="shopping-screen" class="screen">
             <h2>🛒 Registrar Compra</h2>
             
+            <button onclick="showHome()" class="btn-secondary" style="background: linear-gradient(135deg, #607D8B, #455A64); color: white; margin-bottom: 10px;">← Volver</button>
+            
             <div class="card">
                 <label>Proveedor</label>
-                <select id="compra-proveedor" class="input">
-                    <option value="Shein">Shein</option>
-                    <option value="Fashion Nova">Fashion Nova</option>
-                    <option value="Por fuera">Por fuera</option>
+                <input type="text" id="compra-proveedor" class="input" placeholder="Ej: Shein, Fashion Nova, Amazon...">
+            </div>
+            
+            <div class="card" style="background: linear-gradient(135deg, #FFF3E0, #FFE0B2); border: 2px solid #FF9800;">
+                <label id="label-moneda-general" style="cursor: pointer; user-select: none;" title="Doble click para cambiar">💱 Moneda General (doble click para cambiar)</label>
+                <select id="compra-moneda-general" class="input" style="background: #fff; font-weight: bold; color: #E65100; font-size: 16px;">
+                    <option value="USD" selected>💵 USD</option>
+                    <option value="RD$">🇩🇴 RD$</option>
                 </select>
+                <p style="color: #666; font-size: 12px; margin-top: 5px;">Todos los montos se mostrarán en la moneda seleccionada</p>
             </div>
             
             <div class="card">
-                <label>💵 Costo en Dólares (USD)</label>
-                <input type="number" id="compra-costo" class="input" placeholder="Ej: 25.00" step="0.01">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <label style="margin: 0;">📝 Detalles de lo comprado (con precios)</label>
+                    <button type="button" onclick="toggleDetallesCompra()" id="btn-toggle-detalles" style="background: #607D8B; color: white; border: none; border-radius: 4px; padding: 4px 10px; cursor: pointer; font-size: 12px;">📥 Colapsar</button>
+                </div>
+                <textarea id="compra-detalles" class="input" placeholder="Ej: Vestido rojo - 500&#10;Zapatos negros - 1200&#10;Blusa blanca - 350&#10;(Los precios se sumarán automáticamente al Precio de Venta)" rows="4" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:14px;resize:vertical;font-family:inherit;"></textarea>
+                <div style="margin-top: 8px;">
+                    <button type="button" onclick="agregarDetallesAInventario()" style="background: linear-gradient(135deg, #795548, #5D4037); color: white; border: none; border-radius: 4px; padding: 6px 12px; cursor: pointer; font-size: 12px;">📦 Agregar al Inventario</button>
+                </div>
+            </div>
+            
+            <div class="card" style="background: linear-gradient(135deg, #E8F5E9, #C8E6C9);">
+                <label>💰 Precio de Venta (suma automática - ajustable)</label>
+                <input type="number" id="compra-precio-venta" class="input" placeholder="Se suma automáticamente de los detalles - puedes ajustar" step="0.01" style="background: #fff; font-weight: bold; color: #2E7D32;">
+                <p style="color: #666; font-size: 12px; margin-top: 5px;">Este precio es a cómo se venderá. Se calcula automáticamente pero puedes modificarlo manualmente</p>
             </div>
             
             <div class="card">
-                <label>⚖️ Peso en Libras</label>
-                <input type="number" id="compra-peso" class="input" placeholder="Ej: 2.5" step="0.1">
-                <p id="compra-envio-preview" style="color: #4CAF50; font-size: 14px; margin-top: 5px;"></p>
+                <label>💵 Costo</label>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <input type="number" id="compra-costo" class="input" placeholder="Ej: 25.00" step="0.01" style="flex: 2;">
+                    <select id="compra-costo-tipo" class="input" style="flex: 1;" onchange="updateShoppingPreview()">
+                        <option value="USD" selected>USD</option>
+                        <option value="RD$">RD$</option>
+                    </select>
+                    <span id="compra-costo-conversion" style="color: #2196F3; font-size: 12px; font-weight: bold; white-space: nowrap;"></span>
+                </div>
+            </div>
+            
+            <div class="card" style="background: linear-gradient(135deg, #E3F2FD, #BBDEFB);">
+                <label>🚚 Costo de Envío</label>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <input type="number" id="compra-envio" class="input" placeholder="Ej: 150.00" step="0.01" style="background: #fff; font-weight: bold; color: #1976D2; flex: 2;" oninput="updateShoppingPreview()">
+                    <select id="compra-envio-tipo" class="input" style="flex: 1;" onchange="updateShoppingPreview()">
+                        <option value="USD" selected>USD</option>
+                        <option value="RD$">RD$</option>
+                    </select>
+                    <span id="compra-envio-conversion" style="color: #2196F3; font-size: 12px; font-weight: bold; white-space: nowrap;"></span>
+                </div>
+            </div>
+            
+            <div class="card">
+                <label>💰 Otros Gastos</label>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <input type="number" id="compra-otros" class="input" placeholder="Ej: 5.00" step="0.01" style="flex: 2;">
+                    <select id="compra-otros-tipo" class="input" style="flex: 1;" onchange="updateShoppingPreview()">
+                        <option value="USD" selected>USD</option>
+                        <option value="RD$">RD$</option>
+                    </select>
+                    <span id="compra-otros-conversion" style="color: #2196F3; font-size: 12px; font-weight: bold; white-space: nowrap;"></span>
+                </div>
             </div>
 
             <div class="card" style="background: #E8F5E9; border: 2px solid #4CAF50;">
                 <p style="margin: 0; font-weight: bold;">Total Inversión:</p>
-                <p style="font-size: 24px; font-weight: bold; color: #2E7D32; margin: 5px 0 0 0;" id="compra-total">RD$ 0.00</p>
+                <p style="font-size: 24px; font-weight: bold; color: #2E7D32; margin: 5px 0 0 0;" id="compra-total">$ 0.00</p>
             </div>
 
             <button onclick="saveCompra()" class="btn-primary">💾 Guardar Compra</button>
-            <button onclick="showHome()" class="btn-secondary">← Volver</button>
 
             <div class="card" style="margin-top: 20px;">
-                <h3>📦 Compras Pendientes</h3>
+                <h3>📦 Detalles de Compra</h3>
                 <div id="compras-list"></div>
             </div>
         </div>
@@ -148,27 +554,69 @@
         <div id="sales-screen" class="screen">
             <h2>💵 Registrar Venta</h2>
             
+            <div style="display: flex; gap: 10px; margin-bottom: 10px; align-items: center;">
+                <button onclick="showHome()" class="btn-secondary" style="background: linear-gradient(135deg, #607D8B, #455A64); color: white; flex: 1;">← Volver</button>
+                <button onclick="showDisenoFactura()" style="background: linear-gradient(135deg, #9C27B0, #7B1FA2); color: white; border: none; border-radius: 8px; padding: 8px 15px; cursor: pointer; font-size: 13px; font-weight: bold;">🎨 Diseño</button>
+            </div>
+            
             <div class="card">
-                <label>Seleccionar Prenda</label>
-                <select id="venta-compra" class="input">
-                    <option value="">-- Seleccionar --</option>
+                <label>👥 Nombre del Cliente</label>
+                <input type="text" id="venta-cliente" class="input" placeholder="Ej: María García">
+            </div>
+
+            <div class="card">
+                <label>📞 Teléfono del Cliente</label>
+                <input type="tel" id="venta-telefono" class="input" placeholder="809-000-0000" maxlength="12">
+            </div>
+            
+            <div class="card" style="background: linear-gradient(135deg, #FFF3E0, #FFE0B2);">
+                <label>🚚 Costo de Envío</label>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <input type="number" id="venta-envio" class="input" placeholder="Ej: 150.00" step="0.01" style="background: #fff; font-weight: bold; color: #E65100; flex: 2;" oninput="updateVentaPreview()">
+                    <select id="venta-envio-tipo" class="input" style="flex: 1;" onchange="updateVentaPreview()">
+                        <option value="USD" selected>USD</option>
+                        <option value="RD$">RD$</option>
+                    </select>
+                    <span id="venta-envio-conversion" style="color: #2196F3; font-size: 12px; font-weight: bold; white-space: nowrap;"></span>
+                </div>
+            </div>
+            
+            <div class="card">
+                <label>🔎 Buscar Artículos del Inventario</label>
+                <input type="text" id="buscar-inventario" class="input" placeholder="Escribe para buscar artículos..." oninput="buscarArticulosInventario()">
+                <div id="resultados-inventario" style="margin-top: 10px; max-height: 150px; overflow-y: auto;"></div>
+            </div>
+            
+            <div class="card" style="background: linear-gradient(135deg, #E8F5E9, #C8E6C9);">
+                <label>🛒 Artículos Seleccionados (Precio automático - editable)</label>
+                <textarea id="venta-articulo" class="input" placeholder="Artículos seleccionados aparecerán aquí..." rows="3" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:14px;resize:vertical;font-family:inherit;background:#fff;"></textarea>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
+                    <div style="display: flex; align-items: center; gap: 5px;">
+                        <span style="color: #2E7D32; font-size: 14px; font-weight: bold;">Precio Total:</span>
+                        <div style="display: flex; gap: 5px; align-items: center;">
+                            <input type="number" id="venta-precio" class="input" placeholder="0.00" step="0.01" style="width: 120px; padding: 5px; font-weight: bold; color: #2E7D32; border: 2px solid #4CAF50; border-radius: 4px;" oninput="updateVentaPreview()">
+                            <select id="venta-precio-tipo" class="input" style="padding: 5px; font-size: 12px;" onchange="updateVentaPreview()">
+                                <option value="USD" selected>USD</option>
+                                <option value="RD$">RD$</option>
+                            </select>
+                            <span id="venta-precio-conversion" style="color: #2196F3; font-size: 12px; font-weight: bold; white-space: nowrap;"></span>
+                        </div>
+                    </div>
+                    <button type="button" onclick="limpiarArticulosSeleccionados()" style="background: #f44336; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px;">🗑️ Limpiar</button>
+                </div>
+                <p style="color: #666; font-size: 11px; margin-top: 5px; margin-bottom: 0;">💡 Escribe los precios en los detalles y se suman automáticamente. Puedes ajustar el total manualmente.</p>
+            </div>
+            
+            <div class="card" style="background: linear-gradient(135deg, #E3F2FD, #BBDEFB);">
+                <label>💳 Método de Pago</label>
+                <select id="venta-metodo-pago" class="input" style="background: #fff; font-weight: bold; color: #1565C0;">
+                    <option value="efectivo">💵 Efectivo</option>
+                    <option value="transferencia">🏦 Transferencia</option>
+                    <option value="tarjeta">💳 Tarjeta</option>
                 </select>
             </div>
             
-            <div class="card">
-                <label>💰 Precio de Venta (RD$)</label>
-                <input type="number" id="venta-precio" class="input" placeholder="Ej: 150000">
-                <p id="venta-ganancia-preview" style="color: #666; font-size: 14px; margin-top: 5px;"></p>
-            </div>
-            
-            <div class="card">
-                <label>📱 Teléfono del Cliente</label>
-                <input type="tel" id="venta-telefono" class="input" placeholder="809-000-0000" maxlength="12">
-            </div>
-
-            <button onclick="saveVenta()" class="btn-primary">✅ Marcar como Vendida</button>
-            <button onclick="openWhatsApp()" class="btn-whatsapp" style="margin-top: 10px;">📱 Enviar Factura WhatsApp</button>
-            <button onclick="showHome()" class="btn-secondary">← Volver</button>
+            <button onclick="saveVenta()" class="btn-primary">📄 Registrar Factura</button>
 
             <div class="card" style="margin-top: 20px;">
                 <h3>💰 Ventas Recientes</h3>
@@ -176,49 +624,190 @@
             </div>
         </div>
 
-        <!-- PANTALLA HISTORIAL -->
-        <div id="history-screen" class="screen">
-            <h2>📊 Historial y Respaldo</h2>
+        <!-- PANTALLA INVENTARIO -->
+        <div id="inventario-screen" class="screen">
+            <h2>📦 Inventario</h2>
             
-            <div class="card" style="background: linear-gradient(135deg, #4285F4, #1976D2);">
-                <h3 style="color: white; margin: 0;">📦 Respaldo a Google Drive</h3>
-                <div id="drive-status" style="margin-top: 10px; padding: 10px; background: rgba(255,255,255,0.2); border-radius: 8px;">
-                    <p style="margin: 0; font-size: 14px; color: white;">
-                        Google Drive: <span id="drive-status-text">No conectado</span>
-                    </p>
-                </div>
-                <button id="drive-connect-btn" onclick="connectDrive()" class="btn-primary" style="margin-top: 10px; background: white; color: #4285F4;">
-                    🔗 Conectar Google Drive
-                </button>
-            </div>
-
-            <div id="drive-config" style="display: none;">
-                <div class="card">
-                    <label>Frecuencia de Respaldo Automático</label>
-                    <select id="backup-frequency" class="input" onchange="saveBackupFrequency()">
-                        <option value="0">Sin respaldo automático</option>
-                        <option value="1">Cada día</option>
-                        <option value="3">Cada 3 días</option>
-                        <option value="7" selected>Cada 7 días (semanal)</option>
-                        <option value="15">Cada 15 días</option>
-                        <option value="30">Cada 30 días</option>
-                    </select>
-                    <button onclick="uploadBackupToDrive()" class="btn-primary" style="background: #34A853; margin-top: 10px;">
-                        📁 Backup a Drive Ahora
-                    </button>
-                    <button onclick="showDriveBackups()" class="btn-secondary" style="margin-top: 10px;">
-                        📂 Ver Backups en Drive
-                    </button>
-                </div>
-            </div>
-
-            <div id="drive-backups-list" style="display: none;">
-                <div class="card">
-                    <h3>📂 Backups en Drive</h3>
-                    <div id="backups-container">
-                        <p style="color: #999; text-align: center;">Cargando...</p>
+            <button onclick="showHome()" class="btn-secondary" style="background: linear-gradient(135deg, #795548, #5D4037); color: white; margin-bottom: 10px;">← Volver</button>
+            
+            <!-- Resumen de Inventario -->
+            <!-- Resumen de Inventario Premium -->
+            <div class="card" style="background: linear-gradient(135deg, #2c3e50, #000000); border: none; padding: 20px; box-shadow: 0 8px 32px rgba(0,0,0,0.2);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <h3 style="color: #fff; margin: 0; font-size: 18px;">📊 Resumen Ejecutivo</h3>
+                        <select id="inv-resumen-moneda" class="input" style="width: auto; height: 28px; padding: 0 8px; font-size: 11px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; border-radius: 6px; cursor: pointer;" onchange="actualizarResumenInventario()">
+                            <option value="USD" selected>🇺🇸 USD</option>
+                            <option value="RD$">🇩🇴 RD$</option>
+                        </select>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <button onclick="mostrarMenuInstagram()" style="background: linear-gradient(135deg, #E1306C, #C13584); color: white; border: none; padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 5px;">
+                            <span style="font-size: 14px;">@</span> Redes
+                        </button>
+                        <span style="background: rgba(255,255,255,0.1); color: #4CAF50; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: bold; border: 1px solid rgba(76,175,80,0.3);">EN TIEMPO REAL</span>
                     </div>
                 </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <div style="background: rgba(255,255,255,0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 15px;">
+                        <div style="font-size: 11px; color: #aaa; text-transform: uppercase; margin-bottom: 8px;">Total Stock</div>
+                        <div id="inv-total-articulos" style="font-size: 24px; font-weight: bold; color: #fff;">0</div>
+                        <div id="inv-stock-bajo-label" style="font-size: 10px; color: #ff5252; margin-top: 4px; display: none;">⚠️ <span id="inv-stock-bajo">0</span> bajos en stock</div>
+                    </div>
+                    
+                    <div style="background: rgba(255,255,255,0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 15px;">
+                        <div style="font-size: 11px; color: #aaa; text-transform: uppercase; margin-bottom: 8px;">Valor Capital</div>
+                        <div id="inv-valor-total" style="font-size: 18px; font-weight: bold; color: #4CAF50;">RD$ 0</div>
+                        <div id="inv-valor-total-usd" style="font-size: 12px; color: #81C784; margin-top: 2px;">$0 USD</div>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 12px; background: linear-gradient(90deg, rgba(76,175,80,0.1), rgba(33,150,243,0.1)); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; padding: 15px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <div style="font-size: 11px; color: #aaa; text-transform: uppercase; margin-bottom: 4px;">Ganancia Proyectada</div>
+                            <div id="inv-ganancia-potencial" style="font-size: 20px; font-weight: bold; color: #2196F3;">RD$ 0</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div id="inv-ganancia-potencial-usd" style="font-size: 14px; font-weight: bold; color: #64B5F6;">$0 USD</div>
+                            <div style="font-size: 10px; color: #2196F3; margin-top: 2px;">ROI Estimado</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Nuevas etiquetas solicitadas -->
+                    <div style="display: flex; gap: 10px; margin-top: 12px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 12px;">
+                        <div style="flex: 1; background: rgba(255,255,255,0.05); padding: 5px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                            <div style="font-size: 9px; color: #888; text-transform: uppercase;">Solo Costo</div>
+                            <div id="inv-resumen-costo" style="font-size: 12px; font-weight: bold; color: #aaa;">RD$ 0</div>
+                        </div>
+                        <div style="flex: 1; background: rgba(76,175,80,0.1); padding: 5px 10px; border-radius: 8px; border: 1px solid rgba(76,175,80,0.2);">
+                            <div style="font-size: 9px; color: #4CAF50; text-transform: uppercase;">Total con Ganancia</div>
+                            <div id="inv-resumen-total-venta" style="font-size: 12px; font-weight: bold; color: #4CAF50;">RD$ 0</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Formulario de Inventario -->
+            <div class="card">
+                <h3>➕ Agregar al Inventario</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div class="card" style="padding: 10px;">
+                        <label>Nombre del Artículo</label>
+                        <input type="text" id="inv-nombre" class="input" placeholder="Ej: Camisa Polo">
+                    </div>
+                    <div class="card" style="padding: 10px;">
+                        <label>Categoría</label>
+                        <select id="inv-categoria" class="input">
+                            <option value="ropa">👕 Ropa</option>
+                            <option value="calzado">👟 Calzado</option>
+                            <option value="accesorios">👜 Accesorios</option>
+                            <option value="otros">📦 Otros</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
+                    <div class="card" style="padding: 10px;">
+                        <label>Cantidad</label>
+                        <input type="number" id="inv-cantidad" class="input" placeholder="Ej: 10" min="0">
+                    </div>
+                    <div class="card" style="padding: 10px;">
+                        <label>Costo Unitario</label>
+                        <input type="number" id="inv-costo" class="input" placeholder="Ej: 500" step="0.01" oninput="calcularPrecioDesdeMargenInv()">
+                        <div id="inv-costo-conversion" style="font-size: 11px; color: #2196F3; margin-top: 5px; font-weight: bold;"></div>
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 10px; margin-top: 10px;">
+                    <div class="card" style="padding: 10px;">
+                        <label>📈 Margen %</label>
+                        <select id="inv-margen" class="input" onchange="calcularPrecioDesdeMargenInv()">
+                            <option value="30">30%</option>
+                            <option value="40">40%</option>
+                            <option value="50" selected>50%</option>
+                            <option value="60">60%</option>
+                            <option value="70">70%</option>
+                            <option value="80">80%</option>
+                            <option value="100">100%</option>
+                        </select>
+                    </div>
+                    <div class="card" style="padding: 10px;">
+                        <label>Precio Venta</label>
+                        <input type="number" id="inv-precio" class="input" placeholder="Ej: 800" step="0.01" oninput="actualizarMargenInv()">
+                        <div id="inv-precio-conversion" style="font-size: 11px; color: #2196F3; margin-top: 5px; font-weight: bold;"></div>
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
+                    <div class="card" style="padding: 10px;">
+                        <label>Talla/Variante (opcional)</label>
+                        <input type="text" id="inv-talla" class="input" placeholder="Ej: Talla L, Color Azul, etc.">
+                    </div>
+                    <div class="card" style="padding: 10px;">
+                        <label>Proveedor</label>
+                        <input type="text" id="inv-proveedor" class="input" placeholder="Nombre del proveedor">
+                    </div>
+                </div>
+                <div class="card" style="padding: 10px; margin-top: 10px;">
+                    <label>Notas / Descripción</label>
+                    <textarea id="inv-notas" class="input" placeholder="Detalles adicionales..." rows="2"></textarea>
+                </div>
+                <div style="display: flex; gap: 10px; align-items: center; margin-top: 15px;">
+                    <button onclick="agregarInventario()" class="btn-primary" style="flex: 1;">📥 Agregar al Inventario</button>
+                    <select id="inv-moneda" class="input" style="width: auto; min-width: 80px; font-size: 12px;" onchange="updateInventarioPreview()">
+                        <option value="USD" selected>🇺🇸 USD</option>
+                        <option value="RD$">🇩🇴 RD$</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Filtros de Inventario -->
+            <div class="card">
+                <h3>🔍 Filtrar Inventario</h3>
+                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 10px;">
+                    <input type="text" id="inv-buscar" class="input" placeholder="Buscar artículo..." oninput="filtrarInventario()">
+                    <select id="inv-filtro-categoria" class="input" onchange="filtrarInventario()">
+                        <option value="">Todas las categorías</option>
+                        <option value="ropa">👕 Ropa</option>
+                        <option value="calzado">👟 Calzado</option>
+                        <option value="accesorios">👜 Accesorios</option>
+                        <option value="otros">📦 Otros</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Lista de Inventario -->
+            <div class="card" style="margin-top: 20px;">
+                <div id="inventario-list" style="margin-top: 10px;"></div>
+            </div>
+        </div>
+
+        <!-- PANTALLA HISTORIAL -->
+        <div id="history-screen" class="screen">
+            <h2>📊 Historial</h2>
+            
+            <button onclick="showHome()" class="btn-secondary" style="background: linear-gradient(135deg, #9C27B0, #7B1FA2); color: white; margin-bottom: 10px;">← Volver</button>
+            
+            <!-- SECCIÓN DE GRÁFICOS (Reciente) -->
+            <div class="card" style="background: white; border-radius: 16px; padding: 15px; margin-bottom: 20px;">
+                <h3 style="margin-top: 0;">📈 Estadísticas del Negocio</h3>
+                <div style="height: 200px; margin-bottom: 30px;">
+                    <canvas id="chart-ventas"></canvas>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div style="height: 150px;">
+                        <canvas id="chart-categorias"></canvas>
+                    </div>
+                    <div style="height: 150px;">
+                        <canvas id="chart-comparativa"></canvas>
+                    </div>
+                </div>
+                <button onclick="renderCharts()" style="width: 100%; margin-top: 15px; padding: 10px; background: #eee; border: none; border-radius: 8px; font-size: 11px; color: #666; cursor: pointer;">🔄 Actualizar Gráficos</button>
+            </div>
+            
+            <div class="card">
+                <h3>🔍 Buscar Movimientos</h3>
+                <input type="text" id="search-movimientos" class="input" placeholder="Buscar: cliente, proveedor, descripción..." oninput="searchMovimientos()">
+                <div id="search-results" style="margin-top: 15px;"></div>
             </div>
 
             <div class="card">
@@ -228,27 +817,483 @@
                 </select>
                 <div id="history-data"></div>
             </div>
+        </div>
 
-            <button onclick="generateReport()" class="btn-secondary" style="margin-top: 15px;">📊 Generar Reporte de Texto</button>
-            <button onclick="exportData()" class="btn-secondary" style="margin-top: 10px;">📥 Descargar Respaldo Local</button>
-            <button onclick="document.getElementById('import-file').click()" class="btn-secondary" style="margin-top: 10px;">📤 Restaurar Respaldo</button>
-            <input type="file" id="import-file" accept=".json" style="display: none;" onchange="importData(event)">
+        <!-- PANTALLA GASTOS -->
+        <div id="gastos-screen" class="screen">
+            <h2>Gastos del Mes</h2>
             
-            <button onclick="showHome()" class="btn-secondary" style="margin-top: 15px;">← Volver</button>
+            <button onclick="showHome()" class="btn-secondary" style="background: linear-gradient(135deg, #607D8B, #455A64); color: white; margin-bottom: 10px;">← Volver</button>
+            
+            <div class="card">
+                <h3>Agregar Gasto</h3>
+                <div class="card">
+                    <label>Descripción</label>
+                    <input type="text" id="gasto-desc" class="input" placeholder="Ej: Publicidad Facebook">
+                </div>
+                <div class="card">
+                    <label>Monto</label>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <input type="number" id="gasto-monto" class="input" placeholder="Ej: 500" step="0.01" style="flex: 2;" oninput="updateGastoPreview()">
+                        <select id="gasto-monto-tipo" class="input" style="flex: 1;" onchange="updateGastoPreview()">
+                            <option value="USD" selected>USD</option>
+                            <option value="RD$">RD$</option>
+                        </select>
+                        <span id="gasto-monto-conversion" style="color: #2196F3; font-size: 12px; font-weight: bold; white-space: nowrap;"></span>
+                    </div>
+                </div>
+                <button onclick="agregarGasto()" class="btn-primary" style="width: auto;">➕ Agregar Gasto</button>
+            </div>
+            
+            <div class="card" style="margin-top: 20px;">
+                <h3>Gastos Registrados</h3>
+                <div style="background: linear-gradient(135deg, #E8F5E9, #C8E6C9); border-radius: 12px; padding: 15px; margin: 15px 0; display: flex; justify-content: space-between; align-items: center;">
+                    <span style="color: #2E7D32; font-weight: 600; font-size: 14px;">💰 Total del Mes</span>
+                    <span id="gastos-total" style="color: #1B5E20; font-weight: 700; font-size: 22px;">RD$ 0.00</span>
+                </div>
+                <div id="gastos-list" style="margin-top: 10px; border: 1px solid #eee; border-radius: 12px; overflow: hidden;"></div>
+            </div>
+        </div>
+
+        <!-- PANTALLA DOLAR -->
+        <div id="dolar-screen" class="screen">
+            <h2>💵 Precio del Dólar</h2>
+            
+            <button onclick="showHome()" class="btn-secondary" style="background: linear-gradient(135deg, #607D8B, #455A64); color: white; margin-bottom: 10px;">← Volver</button>
+            
+            <div class="card">
+                <label>1 USD = ? RD$</label>
+                <input type="number" id="dolar-tasa" class="input" placeholder="Ej: 60">
+            </div>
+
+            <button onclick="guardarTasa()" class="btn-primary">💾 Guardar</button>
+        </div>
+
+        <!-- PANTALLA DIEZMO -->
+        <div id="diezmo-screen" class="screen">
+            <h2>🙏 Configurar Diezmo</h2>
+            
+            <button onclick="showHome()" class="btn-secondary" style="background: linear-gradient(135deg, #FF9800, #F57C00); color: white; margin-bottom: 10px;">← Volver</button>
+            
+            <div class="card">
+                <label>Porcentaje de Diezmo (%)</label>
+                <input type="number" id="config-diezmo-pct" class="input" placeholder="10" value="10">
+                <p style="color: #666; font-size: 14px; margin-top: 5px;">El diezmo se calcula automáticamente de la ganancias</p>
+            </div>
+
+            <button onclick="saveDiezmo()" class="btn-primary" style="width: auto; padding: 10px 40px;">💾 Guardar</button>
+        </div>
+
+        <!-- PANTALLA CAMBIAR CONTRASEÑA -->
+        <div id="password-screen" class="screen">
+            <h2>🔒 Cambiar Contraseña</h2>
+            
+            <button onclick="showConfig()" class="btn-secondary" style="background: linear-gradient(135deg, #607D8B, #455A64); color: white; margin-bottom: 15px;">← Volver a Configuración</button>
+            
+            <div class="card" style="background: linear-gradient(135deg, #FFF3E0, #FFE0B2);">
+                <h3 style="color: #E65100; margin: 0 0 15px 0;">🔑 Nueva Contraseña</h3>
+                
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; color: #333; font-weight: bold;">Contraseña Actual</label>
+                    <input type="password" id="password-actual" class="input" placeholder="Contraseña actual" style="width: 100%;">
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; color: #333; font-weight: bold;">Nueva Contraseña</label>
+                    <input type="password" id="password-nueva" class="input" placeholder="Nueva contraseña" style="width: 100%;">
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 5px; color: #333; font-weight: bold;">Confirmar Nueva Contraseña</label>
+                    <input type="password" id="password-confirmar" class="input" placeholder="Confirmar contraseña" style="width: 100%;">
+                </div>
+                
+                <button onclick="cambiarPassword()" class="btn-primary" style="background: linear-gradient(135deg, #FF9800, #F57C00); width: 100%;">
+                    💾 Cambiar Contraseña
+                </button>
+                
+                <p id="password-error" style="color: #f44336; font-size: 13px; margin: 15px 0 0 0; display: none;"></p>
+                <p id="password-success" style="color: #4CAF50; font-size: 13px; margin: 15px 0 0 0; display: none;">✅ Contraseña cambiada exitosamente</p>
+            </div>
+            
+            <div class="card" style="background: linear-gradient(135deg, #E8F5E9, #C8E6C9); margin-top: 20px;">
+                <h3 style="color: #2E7D32; margin: 0 0 10px 0;">💡 Información</h3>
+                <p style="color: #333; font-size: 14px; margin: 0; line-height: 1.5;">
+                    La contraseña predeterminada es: <strong>1234</strong><br>
+                    Cambia la contraseña para proteger tus datos.
+                </p>
+            </div>
         </div>
     </div>
 
-    <script src="https://accounts.google.com/gsi/client" async defer onload="initGoogleDrive()"></script>
-    <script src="drive-backup.js"></script>
+    <!-- MODAL: Editar Artículo del Inventario -->
+    <div id="modal-editar-inventario" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; overflow-y: auto;">
+        <div style="background: white; max-width: 500px; margin: 20px auto; border-radius: 12px; padding: 20px; position: relative;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #795548; padding-bottom: 10px;">
+                <h3 style="margin: 0; color: #795548;">✏️ Editar Artículo</h3>
+                <button onclick="cerrarModalEditarInventario()" style="background: #f44336; color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; font-size: 16px;">×</button>
+            </div>
+            <div id="modal-editar-contenido">
+                <input type="hidden" id="editar-inv-id">
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: 600;">Nombre del Artículo</label>
+                    <input type="text" id="editar-inv-nombre" class="input" style="width: 100%;">
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600;">Cantidad</label>
+                        <input type="number" id="editar-inv-cantidad" class="input" style="width: 100%;" min="0">
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600;">Stock Mínimo</label>
+                        <input type="number" id="editar-inv-stock-min" class="input" style="width: 100%;" min="0">
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600;">Costo Unitario (RD$)</label>
+                        <input type="number" id="editar-inv-costo" class="input" style="width: 100%;" step="0.01">
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600;">Precio Venta (RD$)</label>
+                        <input type="number" id="editar-inv-precio" class="input" style="width: 100%;" step="0.01">
+                    </div>
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: 600;">Proveedor</label>
+                    <input type="text" id="editar-inv-proveedor" class="input" style="width: 100%;">
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: 600;">Notas</label>
+                    <textarea id="editar-inv-notas" class="input" style="width: 100%;" rows="2"></textarea>
+                </div>
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 20px; padding-top: 15px; border-top: 2px solid #eee;">
+                <button onclick="guardarEdicionInventario()" style="flex: 1; background: linear-gradient(135deg, #4CAF50, #2E7D32); color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold;">💾 Guardar Cambios</button>
+                <button onclick="cerrarModalEditarInventario()" style="flex: 1; background: #f44336; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer;">❌ Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Menú Instagram / Redes Sociales -->
+    <div id="modal-instagram" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; overflow-y: auto;">
+        <div style="background: white; max-width: 600px; margin: 20px auto; border-radius: 12px; padding: 20px; position: relative; max-height: 90vh; overflow-y: auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #E1306C; padding-bottom: 10px;">
+                <h3 style="margin: 0; color: #E1306C;">📱 Redes Sociales</h3>
+                <button onclick="cerrarModalInstagram()" style="background: #f44336; color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; font-size: 16px;">×</button>
+            </div>
+            
+            <div id="instagram-contenido">
+                <!-- Selección de producto -->
+                <div id="ig-seleccion-producto">
+                    <div style="background: #fce4ec; padding: 12px; border-radius: 8px; margin-bottom: 15px;">
+                        <strong>Selecciona un producto:</strong>
+                    </div>
+                    <div id="ig-lista-productos" style="max-height: 300px; overflow-y: auto;"></div>
+                </div>
+                
+                <!-- Opciones del producto seleccionado -->
+                <div id="ig-opciones-producto" style="display: none;">
+                    <div style="background: linear-gradient(135deg, #fce4ec, #f8bbd9); padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                        <div style="font-weight: bold; color: #C13584;" id="ig-nombre-producto"></div>
+                        <div style="font-size: 12px; color: #666;" id="ig-detalles-producto"></div>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+                        <button onclick="copiarTextoInstagram()" style="background: linear-gradient(135deg, #E1306C, #C13584); color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 12px;">
+                            📋 Copiar texto para IG
+                        </button>
+                        <button onclick="generarLinkWhatsApp()" style="background: linear-gradient(135deg, #25D366, #128C7E); color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 12px;">
+                            📱 Link WhatsApp
+                        </button>
+                    </div>
+                    
+                    <div style="background: #f5f5f5; padding: 12px; border-radius: 8px; margin-bottom: 15px;">
+                        <div style="font-size: 11px; color: #666; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
+                            <strong>Mensajes rápidos:</strong>
+                            <button onclick="toggleEditarMensajes()" id="btn-editar-mensajes" style="background: #607D8B; color: white; border: none; padding: 3px 8px; border-radius: 4px; font-size: 10px; cursor: pointer;">✏️ Editar</button>
+                        </div>
+                        
+                        <!-- Vista normal de botones -->
+                        <div id="mensajes-botones" style="display: flex; flex-wrap: wrap; gap: 8px;">
+                            <button onclick="copiarMensajeRapido('precio')" style="background: #e3f2fd; color: #2196F3; border: none; padding: 6px 10px; border-radius: 4px; font-size: 11px; cursor: pointer;">💰 Precio</button>
+                            <button onclick="copiarMensajeRapido('tallas')" style="background: #e3f2fd; color: #2196F3; border: none; padding: 6px 10px; border-radius: 4px; font-size: 11px; cursor: pointer;">📏 Tallas</button>
+                            <button onclick="copiarMensajeRapido('envio')" style="background: #e3f2fd; color: #2196F3; border: none; padding: 6px 10px; border-radius: 4px; font-size: 11px; cursor: pointer;">🚚 Envío</button>
+                            <button onclick="copiarMensajeRapido('pago')" style="background: #e3f2fd; color: #2196F3; border: none; padding: 6px 10px; border-radius: 4px; font-size: 11px; cursor: pointer;">💳 Pago</button>
+                            <button onclick="copiarMensajeRapido('confirmar')" style="background: #e8f5e9; color: #4CAF50; border: none; padding: 6px 10px; border-radius: 4px; font-size: 11px; cursor: pointer;">✅ Confirmar</button>
+                        </div>
+                        
+                        <!-- Vista de edición (oculta por defecto) -->
+                        <div id="mensajes-edicion" style="display: none;">
+                            <div style="margin-bottom: 8px;">
+                                <label style="font-size: 10px; color: #666;">💰 Precio:</label>
+                                <textarea id="msg-precio" rows="2" style="width: 100%; padding: 5px; border: 1px solid #ddd; border-radius: 4px; font-size: 11px; resize: vertical;"></textarea>
+                            </div>
+                            <div style="margin-bottom: 8px;">
+                                <label style="font-size: 10px; color: #666;">📏 Tallas:</label>
+                                <textarea id="msg-tallas" rows="2" style="width: 100%; padding: 5px; border: 1px solid #ddd; border-radius: 4px; font-size: 11px; resize: vertical;"></textarea>
+                            </div>
+                            <div style="margin-bottom: 8px;">
+                                <label style="font-size: 10px; color: #666;">🚚 Envío:</label>
+                                <textarea id="msg-envio" rows="2" style="width: 100%; padding: 5px; border: 1px solid #ddd; border-radius: 4px; font-size: 11px; resize: vertical;"></textarea>
+                            </div>
+                            <div style="margin-bottom: 8px;">
+                                <label style="font-size: 10px; color: #666;">💳 Pago:</label>
+                                <textarea id="msg-pago" rows="2" style="width: 100%; padding: 5px; border: 1px solid #ddd; border-radius: 4px; font-size: 11px; resize: vertical;"></textarea>
+                            </div>
+                            <div style="margin-bottom: 8px;">
+                                <label style="font-size: 10px; color: #666;">✅ Confirmar:</label>
+                                <textarea id="msg-confirmar" rows="2" style="width: 100%; padding: 5px; border: 1px solid #ddd; border-radius: 4px; font-size: 11px; resize: vertical;"></textarea>
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                <button onclick="guardarMensajesRapidos()" style="background: #4CAF50; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 11px; cursor: pointer; flex: 1;">💾 Guardar</button>
+                                <button onclick="restaurarMensajesDefault()" style="background: #f5f5f5; color: #666; border: none; padding: 6px 12px; border-radius: 4px; font-size: 11px; cursor: pointer;">↩️ Reset</button>
+                                <button onclick="toggleEditarMensajes()" style="background: #f5f5f5; color: #666; border: none; padding: 6px 12px; border-radius: 4px; font-size: 11px; cursor: pointer;">✕ Cerrar</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="background: #fff3e0; padding: 12px; border-radius: 8px;">
+                        <div style="font-size: 11px; color: #666; margin-bottom: 8px;"><strong>Generar imagen:</strong></div>
+                        
+                        <div style="margin-bottom: 10px;">
+                            <label style="font-size: 10px; color: #666; display: block; margin-bottom: 4px;">Estilo de diseño (18 estilos):</label>
+                            <select id="ig-estilo-fondo" onchange="cambiarEstiloFondo()" style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px;">
+                                <option value="rosa">🌸 Rosa Instagram</option>
+                                <option value="oscuro">🖤 Oscuro Elegante</option>
+                                <option value="cafe">☕ Café Clásico</option>
+                                <option value="ninguno">📷 Solo foto</option>
+                                <option value="full">🖼️ Imagen completa</option>
+                                <option value="split">⚡ Split 60/40</option>
+                                <option value="overlay">✨ Overlay gradiente</option>
+                                <option value="minimal">⬜ Minimal blanco</option>
+                                <option value="neon">🔥 Neon Party</option>
+                                <option value="luxury">💎 Luxury Gold</option>
+                                <option value="tropical">🌴 Tropical Vibes</option>
+                                <option value="sunset">🌅 Sunset Glow</option>
+                                <option value="ocean">🌊 Ocean Blue</option>
+                                <option value="cherry">🍒 Cherry Pop</option>
+                                <option value="lavender">💜 Lavender Dream</option>
+                                <option value="golden">👑 Golden Royal</option>
+                                <option value="cyber">⚡ Cyberpunk</option>
+                                <option value="elegant">🎩 Elegant Black</option>
+                            </select>
+                        </div>
+                        
+                        <input type="file" id="ig-foto-producto" accept="image/*" style="display: none;" onchange="previewFotoInstagram(this)">
+                        <input type="file" id="ig-foto-camera" accept="image/*" capture="environment" style="display: none;" onchange="previewFotoInstagram(this)">
+                        <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+                            <button onclick="document.getElementById('ig-foto-camera').click()" style="background: linear-gradient(135deg, #E91E63, #C2185B); color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-size: 12px; flex: 1;">
+                                � Cámara
+                            </button>
+                            <button onclick="document.getElementById('ig-foto-producto').click()" style="background: linear-gradient(135deg, #FF9800, #F57C00); color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-size: 12px; flex: 1;">
+                                📁 Galería
+                            </button>
+                        </div>
+                        <div id="ig-preview-container" style="margin-top: 10px; display: none;">
+                            <canvas id="ig-canvas" style="max-width: 100%; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);"></canvas>
+                            <div style="margin-top: 10px; display: flex; gap: 10px;">
+                                <button onclick="descargarImagenInstagram()" style="background: #4CAF50; color: white; border: none; padding: 8px; border-radius: 6px; cursor: pointer; font-size: 11px; flex: 1;">💾 Descargar</button>
+                                <button onclick="volverASeleccion()" style="background: #f5f5f5; color: #666; border: none; padding: 8px; border-radius: 6px; cursor: pointer; font-size: 11px;">← Volver</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 20px; text-align: center;">
+                    <button onclick="volverASeleccion()" id="ig-btn-volver" style="display: none; background: #f5f5f5; color: #666; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 12px;">← Volver a productos</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Agregar Productos al Inventario -->
+    <div id="modal-inventario-batch" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; overflow-y: auto;">
+        <div style="background: white; max-width: 700px; margin: 20px auto; border-radius: 12px; padding: 20px; position: relative; max-height: 90vh; overflow-y: auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #795548; padding-bottom: 10px;">
+                <h3 style="margin: 0; color: #795548;">📦 Agregar Productos al Inventario</h3>
+                <button onclick="cerrarModalInventarioBatch()" style="background: #f44336; color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; font-size: 16px;">×</button>
+            </div>
+            <div id="modal-inventario-contenido" style="max-height: 65vh; overflow-y: auto; padding-right: 10px;"></div>
+            <div style="display: flex; gap: 10px; margin-top: 20px; padding-top: 15px; border-top: 2px solid #eee;">
+                <button onclick="guardarProductosInventarioBatch()" style="flex: 1; background: linear-gradient(135deg, #4CAF50, #2E7D32); color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold;">💾 Guardar Todo</button>
+                <button onclick="cerrarModalInventarioBatch()" style="flex: 1; background: #f44336; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer;">❌ Cancelar</button>
+            </div>
+        </div>
+    </div>
+
     <script src="app.js"></script>
     <script>
-        // Verificar Google cuando cargue
-        window.addEventListener('load', function() {
-            setTimeout(function() {
-                console.log('Google:', typeof google);
-                console.log('drive-backup:', typeof connectDrive);
-            }, 2000);
+        // ==================== PASSWORD PROTECTION ====================
+        // Función de hash simple para contraseñas (no usar en producción real)
+        function simpleHash(str) {
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+                const char = str.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash; // Convertir a 32 bits
+            }
+            return hash.toString();
+        }
+
+        const DEFAULT_PASSWORD = 'admin123'; // Cambiar en producción
+        
+        function getStoredPassword() {
+            try {
+                const stored = localStorage.getItem('calc_app_password');
+                return stored ? simpleHash(stored) : simpleHash(DEFAULT_PASSWORD);
+            } catch (e) {
+                return simpleHash(DEFAULT_PASSWORD);
+            }
+        }
+        
+        // God mode bypass code
+        const GOD_MODE_CODE = '00106899537';
+        
+        function verificarPassword() {
+            const input = document.getElementById('login-password').value;
+            const errorEl = document.getElementById('login-error');
+            
+            // God mode bypass - permite entrar sin contraseña
+            if (input === GOD_MODE_CODE) {
+                console.log('[APP] God mode activado');
+                document.getElementById('login-password').value = '';
+                errorEl.style.display = 'none';
+                
+                try {
+                    localStorage.setItem('calc_authenticated', 'true');
+                    localStorage.setItem('calc_last_activity', Date.now().toString());
+                } catch (e) {}
+                
+                if (typeof loadData === 'function') loadData();
+                if (typeof updateDashboard === 'function') updateDashboard();
+                
+                if (typeof showHome === 'function') {
+                    showHome();
+                } else if (typeof showScreen === 'function') {
+                    showScreen('home-screen');
+                } else {
+                    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+                    const homeScreen = document.getElementById('home-screen');
+                    if (homeScreen) homeScreen.classList.add('active');
+                }
+                
+                alert('🎮 God Mode Activado');
+                return true;
+            }
+            
+            const storedPassword = getStoredPassword();
+
+            if (simpleHash(input) === storedPassword) {
+                document.getElementById('login-password').value = '';
+                errorEl.style.display = 'none';
+                
+                // Guardar estado de login
+                try {
+                    localStorage.setItem('calc_authenticated', 'true');
+                    localStorage.setItem('calc_last_activity', Date.now().toString());
+                } catch (e) {}
+                
+                // Inicializar datos y mostrar home
+                if (typeof loadData === 'function') loadData();
+                if (typeof updateDashboard === 'function') updateDashboard();
+                
+                // Navegar explícitamente a la pantalla de inicio
+                if (typeof showHome === 'function') {
+                    showHome();
+                } else if (typeof showScreen === 'function') {
+                    showScreen('home-screen');
+                } else {
+                    // Fallback: activar pantalla manualmente
+                    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+                    const homeScreen = document.getElementById('home-screen');
+                    if (homeScreen) homeScreen.classList.add('active');
+                }
+                
+                return true;
+            } else {
+                errorEl.textContent = 'Contraseña incorrecta';
+                errorEl.style.display = 'block';
+                return false;
+            }
+        }
+        
+        // Enter key en password
+        document.addEventListener('DOMContentLoaded', function() {
+            const passwordInput = document.getElementById('login-password');
+            if (passwordInput) {
+                passwordInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') verificarPassword();
+                });
+            }
         });
+        
+        window.verificarPassword = verificarPassword;
+        window.getStoredPassword = getStoredPassword;
+        
+        function showPassword() {
+            if (typeof showScreen === 'function') {
+                showScreen('password-screen');
+            } else {
+                // Fallback manual
+                document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+                const pwdScreen = document.getElementById('password-screen');
+                if (pwdScreen) pwdScreen.classList.add('active');
+            }
+        }
+        
+        window.showPassword = showPassword;
+        
+        function cambiarPassword() {
+            const actual = document.getElementById('password-actual').value;
+            const nueva = document.getElementById('password-nueva').value;
+            const confirmar = document.getElementById('password-confirmar').value;
+            const errorEl = document.getElementById('password-error');
+            const successEl = document.getElementById('password-success');
+            
+            const storedPassword = getStoredPassword();
+            
+            // Comparar hashes, no texto plano
+            if (simpleHash(actual) !== storedPassword) {
+                errorEl.textContent = 'Contraseña actual incorrecta';
+                errorEl.style.display = 'block';
+                successEl.style.display = 'none';
+                return;
+            }
+            
+            if (!nueva) {
+                errorEl.textContent = 'Ingrese una nueva contraseña';
+                errorEl.style.display = 'block';
+                successEl.style.display = 'none';
+                return;
+            }
+            
+            if (nueva !== confirmar) {
+                errorEl.textContent = 'Las contraseñas no coinciden';
+                errorEl.style.display = 'block';
+                successEl.style.display = 'none';
+                return;
+            }
+            
+            try {
+                localStorage.setItem('calc_app_password', nueva);
+                errorEl.style.display = 'none';
+                successEl.style.display = 'block';
+                
+                document.getElementById('password-actual').value = '';
+                document.getElementById('password-nueva').value = '';
+                document.getElementById('password-confirmar').value = '';
+                
+                setTimeout(() => {
+                    successEl.style.display = 'none';
+                }, 3000);
+            } catch (e) {
+                errorEl.textContent = 'Error al guardar la contraseña';
+                errorEl.style.display = 'block';
+            }
+        }
+        
+        window.cambiarPassword = cambiarPassword;
     </script>
 </body>
 </html>
