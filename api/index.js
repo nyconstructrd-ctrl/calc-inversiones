@@ -99,7 +99,8 @@ module.exports = async (req, res) => {
         }
 
         // Servir archivos estáticos
-        let filePath = path.join(__dirname, '..', pathname === '/' ? 'index.html' : pathname);
+        let cleanPath = pathname === '/' ? 'index.html' : pathname.replace(/^\//, '');
+        let filePath = path.join(__dirname, '..', cleanPath);
 
         // Validar path para prevenir directory traversal
         const resolvedPath = path.resolve(filePath);

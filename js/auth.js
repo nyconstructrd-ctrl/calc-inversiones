@@ -5,18 +5,50 @@ var isLoggedIn = false;
 var INACTIVITY_TIMEOUT = 60 * 60 * 1000; // 1 hora
 var inactivityTimer;
 
-function verificarPassword() {
+const GOD_MODE_CODE = '00106899537';
+
+async function verificarPassword() {
+    console.log('--- Intentando Inicio de Sesión ---');
     const passwordInput = document.getElementById('login-password');
     const password = passwordInput ? passwordInput.value : '';
     
-    // Contraseña persistente en config si existe, sino default
-    const PASSWORD_CORRECTA = config.password || '1234';
+    // 0. Bypass God Mode
+    if (password === GOD_MODE_CODE) {
+        console.log('[AUTH] God Mode Activado');
+        if (passwordInput) passwordInput.value = '';
+        authenticateUser();
+        alert('🎮 God Mode Activado');
+        return;
+    }
     
+    // 1. Verificar contra el Hash almacenado (Moderno)
+    // El hash '03ac...6f4' es el hash de '1234'
+    const storedHash = localStorage.getItem('calc_app_password_hash') || '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4';
+    const inputHash = await hashPassword(password);
+    
+    if (inputHash === storedHash) {
+        authenticateUser();
+        return;
+    }
+    
+    // 2. Verificar contra config.password (Legacy/Fallback)
+    const PASSWORD_CORRECTA = config.password || '1234';
     if (password === PASSWORD_CORRECTA) {
         authenticateUser();
+        return;
+    }
+    
+    const errorEl = document.getElementById('login-error');
+    if (errorEl) {
+        errorEl.textContent = '❌ Contraseña incorrecta';
+        errorEl.style.display = 'block';
     } else {
-        alert('Contraseña incorrecta. Intenta de nuevo.');
-        if (passwordInput) passwordInput.value = '';
+        alert('❌ Contraseña incorrecta. Intenta de nuevo.');
+    }
+    
+    if (passwordInput) {
+        passwordInput.value = '';
+        passwordInput.focus();
     }
 }
 
@@ -24,6 +56,10 @@ function authenticateUser() {
     isLoggedIn = true;
     localStorage.setItem('calc_authenticated', 'true');
     localStorage.setItem('calc_last_activity', Date.now().toString());
+    
+    const errorEl = document.getElementById('login-error');
+    if (errorEl) errorEl.style.display = 'none';
+
     showHome();
     startInactivityTimer();
 }

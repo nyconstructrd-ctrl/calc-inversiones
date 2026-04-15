@@ -227,8 +227,24 @@ function actualizarTotalVentaDesdeDetalles() {
         const precioInput = document.getElementById('venta-precio');
         if (precioInput && !precioInput.value) {
             precioInput.value = total.toFixed(2);
-            if (typeof updateVentaPreview === 'function') updateVentaPreview();
+            updateVentaPreview();
         }
+    }
+}
+
+function updateVentaPreview() {
+    const tasa = config.tasaCambio || 1;
+    const precio = parseFloat(document.getElementById('venta-precio')?.value) || 0;
+    const precioTipo = document.getElementById('venta-precio-tipo')?.value || 'USD';
+    const envio = parseFloat(document.getElementById('venta-envio')?.value) || 0;
+    const envioTipo = document.getElementById('venta-envio-tipo')?.value || 'USD';
+    
+    if (document.getElementById('venta-precio-conversion')) {
+        document.getElementById('venta-precio-conversion').textContent = precioTipo === 'USD' && precio > 0 ? 'RD$ ' + (precio * tasa).toFixed(2) : '';
+    }
+    
+    if (document.getElementById('venta-envio-conversion')) {
+        document.getElementById('venta-envio-conversion').textContent = envioTipo === 'USD' && envio > 0 ? 'RD$ ' + (envio * tasa).toFixed(2) : '';
     }
 }
 
@@ -239,3 +255,4 @@ window.buscarArticulosInventario = buscarArticulosInventario;
 window.seleccionarArticuloInventario = seleccionarArticuloInventario;
 window.limpiarArticulosSeleccionados = limpiarArticulosSeleccionados;
 window.actualizarTotalVentaDesdeDetalles = actualizarTotalVentaDesdeDetalles;
+window.updateVentaPreview = updateVentaPreview;

@@ -93,7 +93,7 @@ function setupEventListeners() {
     const salesInputs = ['venta-precio', 'venta-envio'];
     salesInputs.forEach(id => {
         const el = document.getElementById(id);
-        if (el) el.addEventListener('input', updateShoppingPreview); // o updateVentaPreview si existiera específica
+        if (el) el.addEventListener('input', updateVentaPreview);
     });
     
     // Gastos
