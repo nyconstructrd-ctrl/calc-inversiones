@@ -218,6 +218,7 @@ function updateDashboard() {
     if (diezmoLabel) {
         diezmoLabel.innerHTML = 'Diezmo (' + (config.diezmoPorciento || 10) + '%) <span style="font-size:12px;">⚙️</span>';
     }
+    checkAlertasTarjetas();
 }
 
 // Función para mostrar pantalla de cambiar contraseña
@@ -299,9 +300,49 @@ window.renderMetodosPago = function() {
     select.innerHTML = html;
 };
 
+function checkAlertasTarjetas() {
+    const container = document.getElementById('dash-alertas');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    if (!window.tarjetas || window.tarjetas.length === 0) return;
+    
+    const hoy = new Date();
+    const diaActual = hoy.getDate();
+    const mesActual = hoy.getMonth();
+    const anioActual = hoy.getFullYear();
+    
+    window.tarjetas.forEach(t => {
+        let fechaPago = new Date(anioActual, mesActual, t.pago);
+        if (diaActual > t.pago) {
+            fechaPago = new Date(anioActual, mesActual + 1, t.pago);
+        }
+        
+        const difTiempo = fechaPago - hoy;
+        const difDias = Math.ceil(difTiempo / (1000 * 60 * 60 * 24));
+        
+        if (difDias >= 0 && difDias <= 7) {
+            const mensaje = difDias === 0 ? '¡PAGA HOY!' : `Faltan ${difDias} días para pagar`;
+            const color = difDias <= 2 ? '#f44336' : '#FF9800';
+            
+            container.innerHTML += `
+                <div style="background: ${color}; color: white; padding: 12px; border-radius: 12px; margin-bottom: 10px; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); animation: pulse 2s infinite;">
+                    <span style="font-size: 20px;">💳</span>
+                    <div style="flex:1;">
+                        <p style="margin:0; font-weight:bold; font-size:13px;">${t.banco} (*${t.ultimos4})</p>
+                        <p style="margin:0; font-size:11px;">${mensaje} (Día ${t.pago})</p>
+                    </div>
+                </div>
+            `;
+        }
+    });
+}
+
 // Asegurar que se renderice cuando se abra la app o al abrir compras
 const originalShowShopping = window.showShopping;
 window.showShopping = function() {
     window.renderMetodosPago();
     if(typeof originalShowShopping === 'function') originalShowShopping();
 };
+
+window.updatePreviewFactura = updatePreviewFactura;
