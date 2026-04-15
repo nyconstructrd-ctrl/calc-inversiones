@@ -261,4 +261,47 @@ window.showDisenoFactura = showDisenoFactura;
 window.saveDisenoFactura = saveDisenoFactura;
 window.saveConfig = saveConfig;
 window.updateDashboard = updateDashboard;
-window.updatePreviewFactura = updatePreviewFactura;
+window.gestionarTarjetasMenu = function() {
+    const banco = prompt('Nombre del Banco (Ej: Banreservas, Popular):');
+    if (!banco) return;
+    
+    const ultimos4 = prompt('Últimos 4 dígitos de la tarjeta (Ej: 1234):');
+    if (!ultimos4) return;
+    
+    const corte = parseInt(prompt('Día de corte (1-31):'));
+    if (!corte || corte < 1 || corte > 31) { alert('Día inválido'); return; }
+    
+    const pago = parseInt(prompt('Restricción: Día límite de pago (1-31):'));
+    if (!pago || pago < 1 || pago > 31) { alert('Día inválido'); return; }
+    
+    const id = Date.now().toString();
+    window.tarjetas.push({ id, banco, ultimos4, corte, pago });
+    
+    try {
+        saveData(); // Llama a saveData (que ya graba window.tarjetas)
+        alert('✅ Tarjeta agregada exitosamente.');
+        renderMetodosPago();
+    } catch(e) {
+        console.error(e);
+    }
+};
+
+window.renderMetodosPago = function() {
+    const select = document.getElementById('compra-metodo-pago');
+    if (!select) return;
+    
+    let html = '<option value="efectivo" selected>💵 Efectivo / Transferencia / Débito</option>';
+    if (window.tarjetas && window.tarjetas.length > 0) {
+        window.tarjetas.forEach(t => {
+            html += `<option value="${t.id}">💳 ${t.banco} (*${t.ultimos4})</option>`;
+        });
+    }
+    select.innerHTML = html;
+};
+
+// Asegurar que se renderice cuando se abra la app o al abrir compras
+const originalShowShopping = window.showShopping;
+window.showShopping = function() {
+    window.renderMetodosPago();
+    if(typeof originalShowShopping === 'function') originalShowShopping();
+};

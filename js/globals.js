@@ -66,10 +66,12 @@ function loadData() {
         const com = localStorage.getItem('calc_compras');
         const ven = localStorage.getItem('calc_ventas');
         const inv = localStorage.getItem('calc_inventario');
+        const tar = localStorage.getItem('calc_tarjetas');
         if (cfg) config = JSON.parse(cfg);
         if (com) compras = JSON.parse(com);
         if (ven) ventas = JSON.parse(ven);
         if (inv) inventario = JSON.parse(inv);
+        if (tar) tarjetas = JSON.parse(tar);
         
         console.log('Datos cargados exitosamente');
     } catch (e) {
@@ -83,6 +85,7 @@ function saveData() {
         localStorage.setItem('calc_compras', JSON.stringify(compras));
         localStorage.setItem('calc_ventas', JSON.stringify(ventas));
         localStorage.setItem('calc_inventario', JSON.stringify(inventario));
+        localStorage.setItem('calc_tarjetas', JSON.stringify(window.tarjetas));
     } catch (e) {
         console.error('Error al guardar datos:', e);
     }

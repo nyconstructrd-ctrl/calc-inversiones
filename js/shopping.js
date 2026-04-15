@@ -98,6 +98,8 @@ function saveCompra() {
     const otrosEnRD = otrosTipo === 'USD' ? otros * tasa : otros;
     const totalRD = costoEnRD + envio + otrosEnRD;
     
+    const metodoPagoVal = document.getElementById('compra-metodo-pago') ? document.getElementById('compra-metodo-pago').value : 'efectivo';
+
     const compra = {
         id: window.compraEditandoId || Date.now(),
         fecha: new Date().toISOString(),
@@ -105,6 +107,7 @@ function saveCompra() {
         detalles: document.getElementById('compra-detalles').value,
         precioVenta: parseFloat(document.getElementById('compra-precio-venta').value) || 0,
         costoTotalLocal: totalRD,
+        metodoPago: metodoPagoVal,
         vendido: false
     };
     
@@ -141,8 +144,16 @@ function renderComprasList() {
     
     let html = '';
     pendientes.forEach(c => {
+        let paymentBadge = '';
+        if (c.metodoPago && c.metodoPago !== 'efectivo') {
+            const tj = window.tarjetas.find(t => String(t.id) === String(c.metodoPago));
+            if (tj) {
+                paymentBadge = `<span style="font-size: 10px; background: #E1BEE7; color: #6A1B9A; padding: 2px 6px; border-radius: 4px; font-weight: bold; margin-left: 5px;">💳 ${tj.banco} *${tj.ultimos4}</span>`;
+            }
+        }
+        
         html += `<div class="list-item" style="position: relative;">
-            <div class="item-title">${c.proveedor}</div>
+            <div class="item-title">${c.proveedor} ${paymentBadge}</div>
             <div class="item-detail">${formatCurrency(c.costoTotalLocal)}</div>
             <div class="item-date">${formatDate(c.fecha)}</div>
             <button onclick="abrirModalCompra(${c.id})" style="position: absolute; top: 10px; right: 10px; background: #607D8B; color: white; border: none; border-radius: 4px; padding: 5px;">⚙️</button>

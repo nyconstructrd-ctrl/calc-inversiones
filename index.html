@@ -531,6 +531,15 @@
             <div class="card" style="background: #E8F5E9; border: 2px solid #4CAF50;">
                 <p style="margin: 0; font-weight: bold;">Total Inversión:</p>
                 <p style="font-size: 24px; font-weight: bold; color: #2E7D32; margin: 5px 0 0 0;" id="compra-total">$ 0.00</p>
+            <div class="card" style="background: linear-gradient(135deg, #F3E5F5, #E1BEE7); border: 2px solid #9C27B0;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <label>💳 Método de Pago</label>
+                    <button type="button" onclick="gestionarTarjetasMenu()" style="background: transparent; color: #9C27B0; border: 1px solid #9C27B0; border-radius: 4px; padding: 4px 8px; font-size: 11px; cursor: pointer;">+ Añadir Tarjeta</button>
+                </div>
+                <select id="compra-metodo-pago" class="input" style="background: #fff; font-weight: bold; color: #6A1B9A;">
+                    <option value="efectivo" selected>💵 Efectivo / Transferencia / Débito</option>
+                </select>
+                <p style="color: #666; font-size: 11px; margin-top: 5px;">Asigna esta compra a una tarjeta de crédito para organizar tus deudas y el recordatorio de pago.</p>
             </div>
 
             <button onclick="saveCompra()" class="btn-primary">💾 Guardar Compra</button>
