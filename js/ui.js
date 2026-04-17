@@ -74,58 +74,56 @@ function showHelp() {
 // Función para actualizar vista previa de factura en el diseñador
 function updatePreviewFactura() {
     const encabezado = document.getElementById('df-encabezado')?.value || '';
-    const pie = document.getElementById('df-pie')?.value || '¡Gracias por su compra!';
+    const pie = document.getElementById('df-pie')?.value || '¡Gracias por su preferencia!';
     const color = document.getElementById('df-color')?.value || '#4CAF50';
     
     const preview = document.getElementById('preview-factura');
     if (!preview) return;
     
-    const nombre = config.nombre || 'Tu Negocio';
+    const nombre = config.nombre || 'TU NEGOCIO';
     const telefono = config.telefono || '000-000-0000';
-    const redes = config.redes || '@tu_negocio';
-    const slogan = config.slogan || 'Tu slogan aquí';
     
     preview.innerHTML = `
-        <div style="text-align: center; border-bottom: 2px dashed ${color}; padding-bottom: 15px; margin-bottom: 15px;">
-            <div style="font-size: 24px; color: ${color}; font-weight: bold; margin-bottom: 5px;">📄 FACTURA</div>
-            <div style="font-size: 18px; font-weight: bold;">${nombre}</div>
-            <div style="font-size: 12px; font-style: italic; color: #666;">"${slogan}"</div>
-            <div style="font-size: 11px; margin-top: 5px;">Tel: ${telefono}</div>
-            ${encabezado ? `<div style="font-size: 11px; color: #555; margin-top: 5px;">${encabezado}</div>` : ''}
-            ${redes ? `<div style="font-size: 10px; color: #777;">${redes}</div>` : ''}
-        </div>
-        
-        <div style="text-align: center; margin: 15px 0;">
-            <div style="font-size: 12px; color: #666;">Fecha: ${new Date().toLocaleString('es-DO')}</div>
-            <div style="font-size: 11px; color: #999;">Factura #001</div>
-        </div>
-        
-        <div style="border-top: 1px dashed #ccc; border-bottom: 1px dashed #ccc; padding: 10px 0; margin: 10px 0;">
-            <div style="font-weight: bold; margin-bottom: 5px;">Cliente: María García</div>
-            <div style="font-size: 11px; color: #666;">Tel: 809-555-1234</div>
-        </div>
-        
-        <div style="margin: 15px 0;">
-            <div style="font-weight: bold; text-align: center; margin-bottom: 10px;">ARTÍCULOS:</div>
-            <div style="display: flex; justify-content: space-between; font-size: 12px; margin: 5px 0;">
-                <span>1x Vestido Rojo</span>
-                <span>$850.00</span>
+        <div style="background: #fff; max-width: 300px; margin: 0 auto; color: #333; font-family: 'Courier New', Courier, monospace; font-size: 13px; line-height: 1.4;">
+            
+            <div style="text-align: center; margin-bottom: 15px;">
+                <div style="font-size: 22px; font-weight: bold; font-family: Arial, sans-serif; color: ${color};">${nombre}</div>
+                ${encabezado ? `<div style="font-size: 11px; color: #666; font-family: Arial, sans-serif; white-space: pre-line; margin-top: 5px;">${encabezado}</div>` : ''}
+                ${!encabezado && telefono ? `<div style="font-size: 11px; color: #666; font-family: Arial, sans-serif; margin-top: 5px;">Tel: ${telefono}</div>` : ''}
             </div>
-            <div style="display: flex; justify-content: space-between; font-size: 12px; margin: 5px 0;">
-                <span>1x Zapatos Negros</span>
-                <span>$1,200.00</span>
+            
+            <div style="border-bottom: 1px dashed #aaa; margin-bottom: 10px;"></div>
+            
+            <div style="font-family: Arial, sans-serif; font-size: 12px; margin-bottom: 15px;">
+                <div style="margin-bottom: 4px;"><strong>CLIENTE:</strong> MARÍA GARCÍA</div>
+                <div style="margin-bottom: 4px;"><strong>FECHA:</strong> ${new Date().toLocaleDateString('es-DO')}</div>
+                <div style="margin-bottom: 4px; color: #9C27B0; font-weight: bold;"><strong>FACTURA:</strong> #001</div>
+                <div><strong>PAGO:</strong> TRANSFERENCIA</div>
             </div>
-        </div>
-        
-        <div style="border-top: 2px solid ${color}; padding-top: 10px; margin-top: 15px;">
-            <div style="display: flex; justify-content: space-between; font-size: 14px; font-weight: bold; color: ${color};">
-                <span>TOTAL:</span>
-                <span>$2,050.00</span>
+            
+            <div style="font-family: Arial, sans-serif; font-size: 13px; font-weight: bold; margin-bottom: 10px;">
+                DETALLES DEL PEDIDO:
             </div>
-        </div>
-        
-        <div style="text-align: center; margin-top: 15px; padding-top: 10px; border-top: 2px dashed ${color};">
-            ${pie.split('\n').map(line => `<div style="font-size: 11px; color: ${color}; margin: 3px 0;">${line}</div>`).join('')}
+            
+            <div style="margin-bottom: 10px;">
+                <div style="margin-bottom: 4px;">1x Pantalón de vestir - $850.00</div>
+                <div>1x Zapatos negros - $1200.00</div>
+            </div>
+            
+            <div style="border-bottom: 1px dashed #aaa; margin-bottom: 10px;"></div>
+            
+            <div style="text-align: right; font-family: Arial, sans-serif; margin-bottom: 10px;">
+                <div style="font-size: 13px; margin-bottom: 4px;">Subtotal: $2,050.00</div>
+                <div style="font-size: 13px;">Envío: $150.00</div>
+            </div>
+            
+            <div style="text-align: right; font-family: Arial, sans-serif; font-size: 18px; font-weight: bold; color: ${color}; margin-bottom: 20px;">
+                TOTAL: $2,200.00
+            </div>
+            
+            <div style="text-align: center; font-size: 11px; color: #888; font-style: italic; font-family: Arial, sans-serif; white-space: pre-line;">
+                ${pie}
+            </div>
         </div>
     `;
 }
@@ -338,55 +336,7 @@ function checkAlertasTarjetas() {
     });
 }
 
-function showDisenoFactura() {
-    loadData();
-    showScreen('diseno-factura-screen');
-    
-    // Rellenar campos
-    if (document.getElementById('df-encabezado')) document.getElementById('df-encabezado').value = config.facturaEncabezado || '';
-    if (document.getElementById('df-pie')) document.getElementById('df-pie').value = config.facturaPie || '';
-    if (document.getElementById('df-color')) document.getElementById('df-color').value = config.facturaColor || '#4CAF50';
-    
-    updatePreviewFactura();
-}
 
-function saveDisenoFactura() {
-    config.facturaEncabezado = document.getElementById('df-encabezado').value.trim();
-    config.facturaPie = document.getElementById('df-pie').value.trim();
-    config.facturaColor = document.getElementById('df-color').value;
-    saveData();
-    alert('🎨 Diseño de factura guardado con éxito');
-    showConfig();
-}
-
-function updatePreviewFactura() {
-    const preview = document.getElementById('preview-factura');
-    if (!preview) return;
-    
-    const encabezado = document.getElementById('df-encabezado').value || 'TU ENCABEZADO AQUÍ';
-    const pie = document.getElementById('df-pie').value || 'MENSAJE FINAL';
-    const color = document.getElementById('df-color').value;
-    
-    preview.innerHTML = `
-        <div style="text-align: center; border-bottom: 1px dashed #ccc; padding-bottom: 10px; margin-bottom: 10px;">
-            <div style="font-weight: bold; font-size: 16px; color: ${color};">${config.nombre || 'Nombre del Negocio'}</div>
-            <div style="font-size: 10px; color: #666; white-space: pre-line;">${encabezado}</div>
-        </div>
-        <div style="font-size: 9px; color: #444;">
-            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
-                <span>CLIENTE: Juan Pérez</span>
-                <span>FECHA: 12/04/2026</span>
-            </div>
-            <div style="border-bottom: 1px solid #eee; margin: 8px 0;"></div>
-            <div style="font-family: monospace;">1x Vestido Rojo ......... $1,200.00</div>
-            <div style="border-bottom: 1px solid #eee; margin: 8px 0;"></div>
-            <div style="text-align: right; font-weight: bold; font-size: 14px; color: ${color};">TOTAL: $1,200.00</div>
-        </div>
-        <div style="text-align: center; margin-top: 15px; font-size: 10px; color: #888; border-top: 1px dashed #ccc; pt: 8px; white-space: pre-line;">
-            ${pie}
-        </div>
-    `;
-}
 
 function toggleDarkMode() {
     const body = document.body;
