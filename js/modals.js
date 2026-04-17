@@ -152,6 +152,15 @@ function editarCompra(id) {
     document.getElementById('compra-detalles').value = c.detalles || '';
     document.getElementById('compra-precio-venta').value = c.precioVenta || '';
     
+    if (document.getElementById('compra-costo')) document.getElementById('compra-costo').value = c.costoTotalLocal || 0;
+    if (document.getElementById('compra-costo-tipo')) document.getElementById('compra-costo-tipo').value = 'RD$';
+    if (document.getElementById('compra-envio')) document.getElementById('compra-envio').value = '';
+    if (document.getElementById('compra-otros')) document.getElementById('compra-otros').value = '';
+    
+    if (document.getElementById('compra-metodo-pago') && c.metodoPago) {
+        document.getElementById('compra-metodo-pago').value = c.metodoPago;
+    }
+    
     showShopping();
     alert('✏️ Modo Edición: Cambia los datos y presiona "Guardar Compra" para actualizar.');
 }
