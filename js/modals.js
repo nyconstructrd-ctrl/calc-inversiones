@@ -145,6 +145,8 @@ function editarCompra(id) {
     const c = compras.find(comp => String(comp.id) === String(id));
     if(!c) return;
     
+    showShopping(); // Esto limpia el formulario antes de rellenarlo
+    
     // Guardar ID para edición (NO eliminar la compra)
     window.compraEditandoId = id;
     
@@ -161,7 +163,8 @@ function editarCompra(id) {
         document.getElementById('compra-metodo-pago').value = c.metodoPago;
     }
     
-    showShopping();
+    if (typeof updateShoppingPreview === 'function') updateShoppingPreview();
+    
     alert('✏️ Modo Edición: Cambia los datos y presiona "Guardar Compra" para actualizar.');
 }
 
