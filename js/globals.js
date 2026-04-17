@@ -21,6 +21,7 @@ var compras = [];
 var ventas = [];
 var inventario = [];
 var articulosSeleccionados = [];
+var tarjetas = [];
 
 // Utilidades de conversión y formateo
 function safeParseFloat(value, defaultValue = 0) {
@@ -72,6 +73,7 @@ function loadData() {
         if (ven) ventas = JSON.parse(ven);
         if (inv) inventario = JSON.parse(inv);
         if (tar) tarjetas = JSON.parse(tar);
+        window.tarjetas = tarjetas;
         
         console.log('Datos cargados exitosamente');
     } catch (e) {
@@ -85,7 +87,7 @@ function saveData() {
         localStorage.setItem('calc_compras', JSON.stringify(compras));
         localStorage.setItem('calc_ventas', JSON.stringify(ventas));
         localStorage.setItem('calc_inventario', JSON.stringify(inventario));
-        localStorage.setItem('calc_tarjetas', JSON.stringify(window.tarjetas));
+        localStorage.setItem('calc_tarjetas', JSON.stringify(tarjetas));
     } catch (e) {
         console.error('Error al guardar datos:', e);
     }

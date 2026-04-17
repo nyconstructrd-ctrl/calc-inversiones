@@ -13,6 +13,10 @@ function loadShoppingForm() {
         document.getElementById('compra-moneda-general').value = savedMoneda;
     }
     
+    if (typeof renderMetodosPago === 'function') {
+        renderMetodosPago();
+    }
+    
     // Doble click en label para cambiar moneda rápidamente
     const labelMoneda = document.getElementById('label-moneda-general');
     const selectMoneda = document.getElementById('compra-moneda-general');
