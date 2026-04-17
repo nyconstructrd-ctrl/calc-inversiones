@@ -73,51 +73,57 @@ function showHelp() {
 
 // Función para actualizar vista previa de factura en el diseñador
 function updatePreviewFactura() {
-    const encabezado = document.getElementById('df-encabezado')?.value || '';
-    const pie = document.getElementById('df-pie')?.value || '¡Gracias por su preferencia!';
-    const color = document.getElementById('df-color')?.value || '#4CAF50';
-    
+    const elEnc = document.getElementById('df-encabezado');
+    const elPie = document.getElementById('df-pie');
+    const elCol = document.getElementById('df-color');
     const preview = document.getElementById('preview-factura');
+    
     if (!preview) return;
     
-    const nombre = config.nombre || 'TU NEGOCIO';
-    const telefono = config.telefono || '000-000-0000';
+    const encabezado = elEnc ? elEnc.value : (config.facturaEncabezado || '');
+    const pie = elPie ? elPie.value : (config.facturaPie || '¡Gracias por su preferencia!');
+    const color = elCol ? elCol.value : (config.facturaColor || '#4CAF50');
+    
+    const nombre = config.nombre || 'CHIC DIVINE';
+    const telefono = config.telefono || '829-510-1202';
+    const redes = config.redes || 'www.instagram.com/chicdiv_';
+    const slogan = config.slogan || 'ELEGANCIA DIVINA';
     
     preview.innerHTML = `
-        <div style="background: #fff; max-width: 350px; margin: 0 auto; color: #333; font-family: 'Courier New', Courier, monospace; font-size: 14px; line-height: 1.5; padding: 20px;">
+        <div style="background: white; color: #333; font-family: 'Courier New', Courier, monospace; font-size: 14px; line-height: 1.4; padding: 10px; border-radius: 4px;">
             <div style="text-align: center; margin-bottom: 5px;">
-                <div style="font-weight: bold; color: ${color}; font-size: 16px;">🧾 FACTURA</div>
-                <div style="font-size: 18px; font-weight: bold; margin-top: 8px;">${nombre}</div>
-                ${encabezado ? `<div style="color: #666; font-style: italic; white-space: pre-line; margin-top: 8px; font-size: 13px;">${encabezado}</div>` : ''}
-                ${!encabezado && telefono ? `<div style="color: #666; margin-top: 8px; font-size: 13px;">Tel: ${telefono}</div>` : ''}
+                <div style="font-size: 18px; font-weight: bold; color: ${color};">🧾 FACTURA</div>
+                <div style="font-size: 20px; font-weight: bold; margin-top: 5px; text-transform: uppercase;">${nombre}</div>
+                <div style="font-size: 12px; margin-top: 2px; font-style: italic;">"${slogan}"</div>
+                <div style="font-size: 12px; margin-top: 2px;">Tel: ${telefono}</div>
+                <div style="font-size: 12px;">${redes}</div>
+                ${encabezado ? `<div style="font-size: 12px; color: #555; margin-top: 5px;">${encabezado}</div>` : ''}
             </div>
             
-            <div style="border-bottom: 2px dashed #ddd; margin: 20px 0;"></div>
+            <div style="border-bottom: 1px dashed #ccc; margin: 15px 0;"></div>
             
-            <div style="text-align: center; margin-bottom: 20px;">
-                <div>Fecha: ${new Date().toLocaleString('es-DO')}</div>
-                <div>Factura #001</div>
+            <div style="text-align: center; margin-bottom: 15px;">
+                <div>Fecha: ${new Date().toLocaleDateString('es-DO')} 12:00 PM</div>
+                <div style="font-weight: bold;">Factura #001</div>
             </div>
             
-            <div style="border-bottom: 2px dashed #ddd; margin: 20px 0;"></div>
+            <div style="border-bottom: 1px dashed #ccc; margin: 15px 0;"></div>
             
-            <div style="text-align: center; margin-bottom: 20px;">
+            <div style="text-align: center; margin-bottom: 15px;">
                 <div style="font-weight: bold;">Cliente: María García</div>
                 <div>Tel: 809-555-1234</div>
             </div>
             
-            <div style="border-bottom: 2px dashed #ddd; margin: 20px 0;"></div>
+            <div style="border-bottom: 1px dashed #ccc; margin: 15px 0;"></div>
             
-            <div style="text-align: center; font-weight: bold; margin-bottom: 20px;">
-                ARTÍCULOS:
-            </div>
+            <div style="text-align: center; font-weight: bold; margin-bottom: 15px; text-transform: uppercase;">ARTÍCULOS:</div>
             
-            <div style="margin-bottom: 20px;">
-                <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+            <div style="margin-bottom: 15px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
                     <span>1x Vestido Rojo</span>
                     <span>$850.00</span>
                 </div>
-                <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
                     <span>1x Zapatos Negros</span>
                     <span>$1,200.00</span>
                 </div>
@@ -127,25 +133,25 @@ function updatePreviewFactura() {
                 </div>
             </div>
             
-            <div style="border-bottom: 2px dashed #ddd; margin: 20px 0;"></div>
+            <div style="border-bottom: 1px dashed #ccc; margin: 15px 0;"></div>
             
-            <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
                 <span>Subtotal:</span>
                 <span>$2,750.00</span>
             </div>
             
-            <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 16px; color: ${color}; margin-bottom: 20px;">
+            <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 18px; color: ${color};">
                 <span>TOTAL:</span>
                 <span>$2,750.00</span>
             </div>
             
             <div style="border-bottom: 2px dashed ${color}; margin: 20px 0;"></div>
             
-            <div style="text-align: center; white-space: pre-line;">
-                ${pie.split('\n').map((lp, i) => i === 0 ? `<div style="color: ${color}; font-weight: bold;">${lp}</div>` : `<div style="color: #666;">${lp}</div>`).join('')}
+            <div style="text-align: center;">
+                ${pie.split('\n').map((lp, i) => i === 0 ? `<div style="color: ${color}; font-weight: bold;">${lp}</div>` : `<div style="color: #666; font-size: 13px;">${lp}</div>`).join('')}
             </div>
             
-            <div style="border-bottom: 2px dashed ${color}; margin: 20px 0 0 0;"></div>
+            <div style="border-bottom: 2px dashed ${color}; margin-top: 20px;"></div>
         </div>
     `;
 }

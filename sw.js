@@ -1,7 +1,7 @@
 // Service Worker para Calc-Inversiones PWA
 // Maneja caché y actualizaciones automáticas
 
-const CACHE_NAME = 'calc-inversiones-v11';
+const CACHE_NAME = 'calc-inversiones-v12';
 const STATIC_ASSETS = [
     '/',
     '/index.html',
