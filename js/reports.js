@@ -64,7 +64,7 @@ function searchMovimientos() {
 }
 
 function descargarBackup() {
-    const data = { config, compras, ventas, inventario, exportDate: new Date().toISOString() };
+    const data = { config, compras, ventas, inventario, tarjetas: window.tarjetas || [], exportDate: new Date().toISOString() };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -72,6 +72,32 @@ function descargarBackup() {
     a.download = `backup-${config.nombre || 'rd-inv'}-${new Date().toLocaleDateString()}.json`;
     a.click();
     alert('Backup descargado. Guárdalo en un lugar seguro.');
+}
+
+function exportData() {
+    descargarBackup();
+}
+
+function enviarBackupWhatsApp() {
+    const data = { config, compras, ventas, inventario, tarjetas: window.tarjetas || [], exportDate: new Date().toISOString() };
+    const jsonStr = JSON.stringify(data, null, 2);
+    const blob = new Blob([jsonStr], { type: 'application/json' });
+    const file = new File([blob], `backup-${config.nombre || 'app'}-${new Date().toLocaleDateString()}.json`, { type: 'application/json' });
+
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        navigator.share({
+            title: 'Backup App',
+            text: 'Aquí está mi respaldo de datos.',
+            files: [file]
+        }).catch(err => {
+            console.error('Error compartiendo:', err);
+            alert('Asegúrate de estar en un celular para compartir directamente. Se descargará el archivo en tu lugar.');
+            descargarBackup();
+        });
+    } else {
+        alert('Tu navegador no soporta enviar archivos directamente. Se descargará el archivo para que lo envíes manualmente.');
+        descargarBackup();
+    }
 }
 
 function importData(event) {
@@ -85,6 +111,10 @@ function importData(event) {
             if (data.compras) compras = data.compras;
             if (data.ventas) ventas = data.ventas;
             if (data.inventario) inventario = data.inventario;
+            if (data.tarjetas) {
+                tarjetas = data.tarjetas;
+                window.tarjetas = tarjetas;
+            }
             saveData();
             alert('Datos importados con éxito');
             location.reload();
@@ -99,3 +129,5 @@ window.loadMonthData = loadMonthData;
 window.searchMovimientos = searchMovimientos;
 window.descargarBackup = descargarBackup;
 window.importData = importData;
+window.exportData = exportData;
+window.enviarBackupWhatsApp = enviarBackupWhatsApp;
