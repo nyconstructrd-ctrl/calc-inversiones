@@ -227,7 +227,7 @@ function agregarInventario() {
     const talla = document.getElementById('inv-talla')?.value.trim() || '';
     const proveedor = document.getElementById('inv-proveedor')?.value.trim() || '';
     const notas = document.getElementById('inv-notas')?.value.trim() || '';
-    const moneda = document.getElementById('inv-moneda')?.value || 'USD';
+    const moneda = document.getElementById('inv-moneda')?.value || 'RD$';
     const tasa = config.tasaCambio || 1;
     
     if (!nombre || cantidad <= 0 || costo <= 0 || precio <= 0) { alert('Cargue todos los campos correctamente'); return; }
@@ -310,7 +310,7 @@ function cerrarModalEditarInventario() {
 
 function updateInventarioPreview() {
     const tasa = config.tasaCambio || 1;
-    const moneda = document.getElementById('inv-moneda')?.value || 'USD';
+    const moneda = document.getElementById('inv-moneda')?.value || 'RD$';
     
     const costo = parseFloat(document.getElementById('inv-costo')?.value) || 0;
     const precio = parseFloat(document.getElementById('inv-precio')?.value) || 0;
