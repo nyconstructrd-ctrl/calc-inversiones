@@ -12,105 +12,145 @@ function sendVentaWhatsApp(id) {
     const lineasArticulos = articulo.split('\n');
     
     // --- CÁLCULO DE ALTURA DINÁMICA (Recomendación 4) ---
-    const alturaLinea = 20;
-    const margenBase = 450; // Cabecera, datos cliente y pie fijo
+    const alturaLinea = 25;
+    const margenBase = 580; // Cabecera ampliada
     const alturaArticulos = lineasArticulos.length * alturaLinea;
     const canvasHeight = margenBase + alturaArticulos;
 
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
-    canvas.width = 400;
+    canvas.width = 450;
     canvas.height = canvasHeight;
 
     // Fondo
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    let y = 40;
-    ctx.textAlign = 'center';
-    
-    // Encabezado
+    let y = 50;
+    const center = canvas.width / 2;
+    const marginLR = 25;
     const brandColor = config.facturaColor || '#4CAF50';
-    ctx.fillStyle = brandColor;
-    ctx.font = 'bold 22px Arial';
-    ctx.fillText(config.nombre || 'RD-INVESTMENTS', canvas.width / 2, y);
     
-    y += 20;
-    ctx.font = '11px Arial';
+    const drawDashedLine = (color = '#ccc') => {
+        y += 10;
+        ctx.setLineDash([6, 4]);
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(marginLR, y); ctx.lineTo(canvas.width - marginLR, y); ctx.stroke(); ctx.setLineDash([]);
+        y += 25;
+    };
+    
+    ctx.textAlign = 'center';
+    ctx.fillStyle = brandColor;
+    ctx.font = 'bold 22px "Courier New", Courier, monospace';
+    ctx.fillText('🧾 FACTURA', center, y);
+    
+    y += 35;
+    ctx.fillStyle = '#333';
+    ctx.font = 'bold 24px "Courier New", Courier, monospace';
+    ctx.fillText(config.nombre || 'Chic Divine', center, y);
+    
+    y += 25;
+    ctx.font = 'italic 16px "Courier New", Courier, monospace';
     ctx.fillStyle = '#666';
-    const subHeader = config.facturaEncabezado || config.slogan || '';
+    const subHeader = config.facturaEncabezado || '';
     subHeader.split('\n').forEach(lh => {
-        ctx.fillText(lh, canvas.width / 2, y);
-        y += 12;
+        ctx.fillText(lh, center, y);
+        y += 22;
     });
     
-    y += 10;
-    if (config.telefono && !config.facturaEncabezado) { ctx.fillText('Tel: ' + config.telefono, canvas.width / 2, y); y += 20; }
+    if (config.telefono && !config.facturaEncabezado) { ctx.fillText('Tel: ' + config.telefono, center, y); y += 22; }
     
-    y += 10;
-    ctx.setLineDash([5, 5]);
-    ctx.strokeStyle = '#ddd';
-    ctx.beginPath(); ctx.moveTo(20, y); ctx.lineTo(380, y); ctx.stroke(); ctx.setLineDash([]);
+    drawDashedLine();
     
-    y += 30;
-    ctx.textAlign = 'left';
+    ctx.font = '16px "Courier New", Courier, monospace';
     ctx.fillStyle = '#333';
-    ctx.font = 'bold 15px Arial';
-    ctx.fillText('CLIENTE: ' + (cliente || 'Público General'), 25, y);
-    y += 22;
-    ctx.font = '13px Arial';
-    ctx.fillText('FECHA: ' + formatDate(fecha), 25, y);
-    y += 20;
-    if (venta.facturaNum) {
-        ctx.fillStyle = '#9C27B0';
-        ctx.font = 'bold 13px Arial';
-        ctx.fillText('FACTURA: ' + venta.facturaNum, 25, y);
-        ctx.fillStyle = '#333';
-        ctx.font = '13px Arial';
-        y += 20;
-    }
-    ctx.fillText('PAGO: ' + (metodoPago || 'efectivo').toUpperCase(), 25, y);
-    
-    y += 30;
-    ctx.font = 'bold 14px Arial';
-    ctx.fillText('DETALLES DEL PEDIDO:', 25, y);
+    ctx.fillText('Fecha: ' + new Date(fecha).toLocaleString('es-DO'), center, y);
     y += 25;
+    if (venta.facturaNum) {
+        ctx.fillText('Factura ' + venta.facturaNum, center, y);
+        y += 25;
+    }
     
-    // Artículos
-    ctx.font = '13px Courier New'; // Fuente monoespaciada para alinear
+    drawDashedLine();
+    
+    ctx.font = 'bold 18px "Courier New", Courier, monospace';
+    ctx.fillText('Cliente: ' + (cliente || 'Público General'), center, y);
+    y += 25;
+    if (telefono) {
+        ctx.font = '16px "Courier New", Courier, monospace';
+        ctx.fillText('Tel: ' + telefono, center, y);
+        y += 25;
+    }
+    
+    drawDashedLine();
+    
+    ctx.font = 'bold 18px "Courier New", Courier, monospace';
+    ctx.fillText('ARTÍCULOS:', center, y);
+    y += 40;
+    
+    ctx.font = '16px "Courier New", Courier, monospace';
     lineasArticulos.forEach(linea => {
-        ctx.fillText(linea.substring(0, 45), 35, y);
+        let textLeft = linea;
+        let textRight = '';
+        const idx = linea.lastIndexOf(' - ');
+        if (idx !== -1) {
+            textLeft = linea.substring(0, idx).trim();
+            textRight = linea.substring(idx + 3).trim();
+        }
+        ctx.textAlign = 'left';
+        ctx.fillText(textLeft.substring(0, 30), marginLR, y);
+        if (textRight) {
+            ctx.textAlign = 'right';
+            ctx.fillText(textRight, canvas.width - marginLR, y);
+        }
         y += alturaLinea;
     });
-
-    y += 20;
-    ctx.setLineDash([2, 5]);
-    ctx.beginPath(); ctx.moveTo(25, y); ctx.lineTo(375, y); ctx.stroke(); ctx.setLineDash([]);
     
-    y += 30;
+    drawDashedLine();
+    
+    ctx.textAlign = 'left';
+    ctx.fillText('Subtotal:', marginLR, y);
     ctx.textAlign = 'right';
-    ctx.font = '14px Arial';
-    ctx.fillText('Subtotal: ' + formatCurrency(precioVenta), 370, y);
+    ctx.fillText(formatCurrency(precioVenta), canvas.width - marginLR, y);
+    y += 30;
+    
     if (costoEnvio > 0) {
-        y += 20;
-        ctx.fillText('Envío: ' + formatCurrency(costoEnvio), 370, y);
+        ctx.textAlign = 'left';
+        ctx.fillText('Envío:', marginLR, y);
+        ctx.textAlign = 'right';
+        ctx.fillText(formatCurrency(costoEnvio), canvas.width - marginLR, y);
+        y += 30;
     }
     
-    y += 30;
+    // TOTAL
+    ctx.textAlign = 'left';
     ctx.fillStyle = brandColor;
-    ctx.font = 'bold 20px Arial';
-    ctx.fillText('TOTAL: ' + formatCurrency(totalVenta), 370, y);
-
-    // Pie
-    y += 50;
+    ctx.font = 'bold 22px "Courier New", Courier, monospace';
+    ctx.fillText('TOTAL:', marginLR, y);
+    ctx.textAlign = 'right';
+    ctx.fillText(formatCurrency(totalVenta), canvas.width - marginLR, y);
+    
+    y += 15;
+    drawDashedLine(brandColor); // Colorful dashed limit
+    
+    // Footer pie
     ctx.textAlign = 'center';
-    ctx.fillStyle = '#888';
-    ctx.font = 'italic 12px Arial';
-    const pie = config.facturaPie || '¡Gracias por su preferencia!';
-    pie.split('\n').forEach(lp => {
-        ctx.fillText(lp, canvas.width / 2, y);
-        y += 18;
+    const pie = config.facturaPie || '¡Gracias por su compra!\nDios le bendiga\nVuelva pronto';
+    pie.split('\n').forEach((lp, index) => {
+        if (index === 0) {
+            ctx.fillStyle = brandColor;
+            ctx.font = 'bold 18px "Courier New", Courier, monospace';
+        } else {
+            ctx.fillStyle = '#666';
+            ctx.font = '16px "Courier New", Courier, monospace';
+        }
+        ctx.fillText(lp, center, y);
+        y += 28;
     });
+    
+    y -= 10;
+    drawDashedLine(brandColor);
 
     // Enviar a WhatsApp
     canvas.toBlob(blob => {
